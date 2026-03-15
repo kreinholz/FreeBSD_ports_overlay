@@ -1,0 +1,11 @@
+TIMESTAMP = 1773354888
+SHA256 (cemu-project-Cemu-2.6.157.ga04eb53-a04eb53_GH0.tar.gz) = de99010451f60780f609d55545172cea02ab937991918fc5e1306b40898e0662
+SIZE (cemu-project-Cemu-2.6.157.ga04eb53-a04eb53_GH0.tar.gz) = 21308536
+SHA256 (mozilla-cubeb-2071354a69aca7ed6df3b4222e305746c2113f60_GH0.tar.gz) = 4d33e013518ece94a74bee8c5ead7c257cc2050a3dce4cd83192a81f39b2c892
+SIZE (mozilla-cubeb-2071354a69aca7ed6df3b4222e305746c2113f60_GH0.tar.gz) = 227176
+SHA256 (arsenm-sanitizers-cmake-aab6948fa863bc1cbe5d0850bc46b9ef02ed4c1a_GH0.tar.gz) = 9f5b073625375322236a94ce8d2d803cdedad321c91e63845f487b9ebfb2c433
+SIZE (arsenm-sanitizers-cmake-aab6948fa863bc1cbe5d0850bc46b9ef02ed4c1a_GH0.tar.gz) = 7234
+SHA256 (Exzap-ZArchive-d2c717730092c7bf8cbb033b12fd4001b7c4d932_GH0.tar.gz) = 96a1be457dd289c24e33a76a1020d0a974d992f771dd3cb7a6dac9c8427e6f8e
+SIZE (Exzap-ZArchive-d2c717730092c7bf8cbb033b12fd4001b7c4d932_GH0.tar.gz) = 19782
+SHA256 (ocornut-imgui-f65bcf481ab34cd07d3909aab1479f409fa79f2f_GH0.tar.gz) = fc2f2f72e18a680b9ba141194ff5b35c940a11e58784d5d22aac7c8d7224592b
+SIZE (ocornut-imgui-f65bcf481ab34cd07d3909aab1479f409fa79f2f_GH0.tar.gz) = 1571863

@@ -1,0 +1,11 @@
+--- meson.build.orig	2026-03-03 05:02:04 UTC
++++ meson.build
+@@ -1861,6 +1861,8 @@ if not get_option('opengl').auto() or have_system or h
+     opengl_libs=['-lopengl32', '-lgdi32']
+   elif host_os == 'linux'
+     opengl_libs=['-lGL']
++  elif host_os == 'freebsd'
++    opengl_libs=['-L/usr/local/lib', '-lGL']
+   else
+     error('Unknown GL platform')
+   endif

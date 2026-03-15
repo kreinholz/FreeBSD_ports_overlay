@@ -1,0 +1,3 @@
+%%SDL%%bin/ffplay
+%%SDL%%share/man/man1/ffplay-all.1.gz
+%%SDL%%share/man/man1/ffplay.1.gz
