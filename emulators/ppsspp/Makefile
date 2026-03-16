@@ -1,6 +1,6 @@
 PORTNAME=	ppsspp
 DISTVERSIONPREFIX=	v
-DISTVERSION?=	1.20.2
+DISTVERSION?=	1.20.3
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -41,7 +41,7 @@ GH_TUPLE?=	Kingcom:armips:v0.11.0-195-ga8d71f0:armips/ext/armips \
 		erkkah:naett:5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302:naett/ext/naett \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
-		Kethen:aemu_postoffice:f5ae0ce8cac89cfc592047925f2064a84536eeb4:aemu_postoffice/ext/aemu_postoffice \
+		Kethen:aemu_postoffice:1edcbf613b602c2a4881d230b1c607263ab11c5d:aemu_postoffice/ext/aemu_postoffice \
 		Kingcom:filesystem:v1.3.2-12-g3f1c185:filesystem/ext/armips/ext/filesystem \
 		libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common
 EXCLUDE=	libzip zlib

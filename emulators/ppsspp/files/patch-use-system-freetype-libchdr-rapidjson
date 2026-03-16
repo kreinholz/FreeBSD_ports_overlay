@@ -97,7 +97,7 @@
  set(FT_REQUIRE_BROTLI OFF CACHE BOOL "" FORCE)
 -if(NOT LIBRETRO)
 +if(NOT LIBRETRO AND NOT USE_SYSTEM_FREETYPE)
-     add_subdirectory(freetype)
+     add_subdirectory(freetype freetype-build)
  endif()
  
 @@ -56,7 +56,9 @@ if(USE_DISCORD AND NOT IOS AND NOT LIBRETRO)
