@@ -1,5 +1,5 @@
 PORTNAME=	azahar
-DISTVERSION=	2125.0-rc1
+DISTVERSION=	2125.0-rc3
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -28,7 +28,7 @@ LIB_DEPENDS=	libboost_iostreams.so:devel/boost-libs \
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	azahar-emu
-GH_TAGNAME=	2125.0-rc1
+GH_TAGNAME=	2125.0-rc3
 GH_TUPLE=	neobrain:nihstro:f4d8659decbfe5d234f04134b5002b82dc515a44:nihstro/externals/nihstro \
 		azahar-emu:dynarmic:526227eebe1efff3fb14dbf494b9c5b44c2e9c1f:dynarmic/externals/dynarmic \
 		herumi:xbyak:v3.71-1460-g0d67fd1:xbyak/externals/xbyak \
@@ -46,7 +46,7 @@ GH_TUPLE=	neobrain:nihstro:f4d8659decbfe5d234f04134b5002b82dc515a44:nihstro/exte
         	knik0:faad2:216f00e8ddba6f2c64caf481a04f1ddd78b93e78:faad2/externals/faad2/faad2 \
         	azahar-emu:ext-library-headers:3b3e28dbe6d033395ce2967fa8030825e7b89de7:extlibraryheaders/externals/library-headers \
         	merryhime:oaknut:6b1d57ea7ed4882d32a91eeaa6557b0ecb4da152:oaknut/externals/oaknut \
-		azahar-emu:compatibility-list:eadcdfb84b6f3b95734e867d99fe16a9e8db717f:compatibilitylist/dist/compatibility_list \
+		azahar-emu:compatibility-list:d9f1126e42b606d02ecc89b10cb9a336a3b2f5a3:compatibilitylist/dist/compatibility_list \
         	KhronosGroup:SPIRV-Tools:v2022.4-759-ga62abcb4:SPIRVTools/externals/spirv-tools \
         	KhronosGroup:SPIRV-Headers:1.5.4.raytracing.fixed-411-gaa6cef1:SPIRVHeaders/externals/spirv-headers \
         	Cyan4973:xxHash:e626a72bc2321cd320e953a0ccf1584cad60f363:xxHash/externals/xxHash \

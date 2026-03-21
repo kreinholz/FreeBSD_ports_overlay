@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.1.86.g843eca8
+PORTVERSION=	1.20.3.25.g5f6b4da
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -15,13 +15,16 @@ NOT_FOR_ARCHS=	mips mips64 powerpc powerpc64 powerpcspe
 NOT_FOR_ARCHS_REASON=	only little-endian is supported, see \
 		https://github.com/hrydgard/ppsspp/issues/8823
 
-BUILD_DEPENDS=	${LOCALBASE}/ffmpeg3/lib/libavcodec.a:multimedia/ffmpeg3
+BUILD_DEPENDS=	${LOCALBASE}/ffmpeg3/lib/libavcodec.a:multimedia/ffmpeg3 \
+		rapidjson>0:devel/rapidjson
 
 LIB_DEPENDS=	libzip.so:archivers/libzip \
 		libsnappy.so:archivers/snappy \
 		libzstd.so:archivers/zstd \
 		libminiupnpc.so:net/miniupnpc \
-		libopenxr_loader.so:graphics/openxr
+		libopenxr_loader.so:graphics/openxr \
+		libfreetype.so:print/freetype2 \
+		libchdr.so:devel/libchdr
 RUN_DEPENDS=	xdg-open:devel/xdg-utils
 
 USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
@@ -29,27 +32,25 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	843eca8
-GH_TUPLE?=	Kingcom:armips:v0.11.0-195-ga8d71f0:armips/ext/armips \
+GH_TAGNAME=	5f6b4da
+GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
+		Kingcom:armips:v0.11.0-195-ga8d71f0:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \
 		KhronosGroup:SPIRV-Cross:4212eef67ed0ca048cb726a6767185504e7695e5:SPIRVCross/ext/SPIRV-Cross \
-		Tencent:rapidjson:73063f5002612c6bf64fe24f851cd5cc0d83eef9:rapidjson/ext/rapidjson \
 		unknownbrackets:ppsspp-debugger:9776332f720c854ef26f325a0cf9e32c02115a9c:ppssppdebugger/assets/debugger \
 		google:cpu_features:v0.4.1-211-gfd4ffc1:cpu_features/ext/cpu_features \
 		RetroAchievements:rcheevos:v12.3.0:rcheevos/ext/rcheevos \
 		erkkah:naett:5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302:naett/ext/naett \
-		rtissera:libchdr:8bba7745d758627258b315997a860039244cedaf:libchdr/ext/libchdr \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
-		hrydgard:freetype:063ed27f481f0bcd3962fd468e1546739d7d285a:freetype/ext/freetype \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
-		Kethen:aemu_postoffice:f5ae0ce8cac89cfc592047925f2064a84536eeb4:aemu_postoffice/ext/aemu_postoffice \
-		Kingcom:filesystem:v1.3.2-12-g3f1c185:filesystem/ext/armips/ext/filesystem \
-		nyorain:dlg:v0.2.2-50-g395ccad:dlg/ext/freetype/subprojects/dlg
+		Kethen:aemu_postoffice:1edcbf613b602c2a4881d230b1c607263ab11c5d:aemu_postoffice/ext/aemu_postoffice \
+		Kingcom:filesystem:v1.3.2-12-g3f1c185:filesystem/ext/armips/ext/filesystem
 EXCLUDE=	libzip zlib
 USE_GL=		glew opengl
-CMAKE_ON=	${LIBZIP MINIUPNPC SNAPPY ZSTD:L:S/^/USE_SYSTEM_/} USE_VULKAN_DISPLAY_KHR
+CMAKE_ON=	${FREETYPE LIBCHDR LIBZIP MINIUPNPC RAPIDJSON SNAPPY \
+		ZSTD:L:S/^/USE_SYSTEM_/} USE_VULKAN_DISPLAY_KHR
 CMAKE_OFF=	USE_DISCORD
-LDFLAGS+=	-Wl,--as-needed # ICE/SM/X11/Xext, Qt5Network
+LDFLAGS+=	-Wl,--as-needed # ICE/SM/X11/Xext
 CONFLICTS_INSTALL=	${PORTNAME}-*
 DESKTOP_ENTRIES=	"PPSSPP" \
 			"" \
