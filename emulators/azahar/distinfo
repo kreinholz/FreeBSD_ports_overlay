@@ -1,6 +1,6 @@
-TIMESTAMP = 1774017137
-SHA256 (azahar-emu-azahar-2125.0-rc3_GH0.tar.gz) = 1578c6f2a59fe11f1782ded0acdcbbeeec3da107a37e1c6b8eaac130abbca32c
-SIZE (azahar-emu-azahar-2125.0-rc3_GH0.tar.gz) = 8744814
+TIMESTAMP = 1774634526
+SHA256 (azahar-emu-azahar-2125.0_GH0.tar.gz) = cc7c141cc0cc457511edf74b9ef477433d6be475fe8d2456566f8e4e4f5ebef3
+SIZE (azahar-emu-azahar-2125.0_GH0.tar.gz) = 8745268
 SHA256 (neobrain-nihstro-f4d8659decbfe5d234f04134b5002b82dc515a44_GH0.tar.gz) = f8c35505ac3d9a833e5d62d64c8921e760bb258133b6408e4b06201eb46efd0c
 SIZE (neobrain-nihstro-f4d8659decbfe5d234f04134b5002b82dc515a44_GH0.tar.gz) = 110629
 SHA256 (azahar-emu-dynarmic-526227eebe1efff3fb14dbf494b9c5b44c2e9c1f_GH0.tar.gz) = 65e149596e93b6e0bc4aef14a42e1d2029613f10c7b3609630d94c4600d2529f
