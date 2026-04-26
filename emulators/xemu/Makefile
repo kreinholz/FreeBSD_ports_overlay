@@ -43,8 +43,7 @@ BUILD_DEPENDS=	gdb>0:devel/gdb \
 		socat>0:net/socat \
 		tesseract>0:graphics/tesseract \
 		xorriso>0:sysutils/xorriso \
-		nlohmann-json>0:devel/nlohmann-json \
-		python3>0:lang/python3
+		nlohmann-json>0:devel/nlohmann-json
 
 LIB_DEPENDS=	libdbus-1.so:devel/dbus \
 		libepoxy.so:graphics/libepoxy \
@@ -57,7 +56,7 @@ LIB_DEPENDS=	libdbus-1.so:devel/dbus \
 		libsamplerate.so:audio/libsamplerate \
 		libxxhash.so.0:devel/xxhash
 
-USES=		gl gmake gnome pkgconfig python:build sdl shebangfix tar:zst
+USES=		gl gmake gnome pkgconfig python:3.9+,build sdl shebangfix tar:zst
 USE_GL=		gl
 USE_GNOME=	gtk30 glib20
 USE_SDL=	sdl3 image3
@@ -82,6 +81,11 @@ PLIST_FILES=	bin/xemu \
 post-extract:
 	@${CP} ${WRKSRC}/subprojects/packagefiles/berkeley-softfloat-3/* ${WRKSRC}/subprojects/berkeley-softfloat-3/
 	@${CP} ${WRKSRC}/subprojects/packagefiles/berkeley-testfloat-3/* ${WRKSRC}/subprojects/berkeley-testfloat-3/
+
+post-patch:
+	@${REINPLACE_CMD} -e 's|python3|python${PYTHON_VER}|g' \
+		${WRKSRC}/scripts/pack-file.py \
+		${WRKSRC}/build.sh
 
 OPTIONS_DEFINE=		AVX512BW GETTEXT JACK PIPEWIRE PIXMAN PNG \
 			PULSEAUDIO SNDIO SPICE SPICE_PROTOCOL VIRGLRENDERER
