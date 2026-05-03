@@ -1,6 +1,6 @@
-TIMESTAMP = 1777230974
-SHA256 (hrydgard-ppsspp-1.20.3.240.g5b969ba-5b969ba_GH0.tar.gz) = a4ff31861c3a985f44c9e279dd4c353fe0485e1b46c806bccc90b595c1e7b71c
-SIZE (hrydgard-ppsspp-1.20.3.240.g5b969ba-5b969ba_GH0.tar.gz) = 38465152
+TIMESTAMP = 1777843214
+SHA256 (hrydgard-ppsspp-1.20.3.297.g540f0d6-540f0d6_GH0.tar.gz) = be645bfc05226ffd2625b6cc1ba527ac4e29be9b5aa151579cd25284da1e9dc4
+SIZE (hrydgard-ppsspp-1.20.3.297.g540f0d6-540f0d6_GH0.tar.gz) = 38471319
 SHA256 (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = da3c61d2d47df12536a7977443387c1c3d7a750fe8c916c943860788b590db7e
 SIZE (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = 769418
 SHA256 (Kingcom-armips-v0.11.0-195-ga8d71f0_GH0.tar.gz) = 8a46d92b070de90cefcd89c2894344d040481e1cf6216b31f4a5e531254fed88
@@ -13,8 +13,8 @@ SHA256 (unknownbrackets-ppsspp-debugger-9776332f720c854ef26f325a0cf9e32c02115a9c
 SIZE (unknownbrackets-ppsspp-debugger-9776332f720c854ef26f325a0cf9e32c02115a9c_GH0.tar.gz) = 810347
 SHA256 (google-cpu_features-v0.4.1-211-gfd4ffc1_GH0.tar.gz) = 20115fd59cf2db71594d71acf3dacfdaf6c1bdf54c1656f781fce4844a803e08
 SIZE (google-cpu_features-v0.4.1-211-gfd4ffc1_GH0.tar.gz) = 109042
-SHA256 (RetroAchievements-rcheevos-v12.3.0_GH0.tar.gz) = bc7ab9985aee7b6a29e3d65492de9371c866236c5873a1c4493ec9cb6d2603d2
-SIZE (RetroAchievements-rcheevos-v12.3.0_GH0.tar.gz) = 436181
+SHA256 (RetroAchievements-rcheevos-v12.3.0-5-g50d7917_GH0.tar.gz) = 9d57b12c165cb1be299846892dcca48f0d8c12095ed0ef47f0792827c6d92688
+SIZE (RetroAchievements-rcheevos-v12.3.0-5-g50d7917_GH0.tar.gz) = 437119
 SHA256 (erkkah-naett-5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302_GH0.tar.gz) = 65b68d645290ecd7478747d52feebf73b390021137a10897cc2a692bf6446afe
 SIZE (erkkah-naett-5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302_GH0.tar.gz) = 88388
 SHA256 (hrydgard-ppsspp-lua-7648485f14e8e5ee45e8e39b1eb4d3206dbd405a_GH0.tar.gz) = ee31027159979d7be564e19710e10339179992f6d663d38337e78340dd31987b
