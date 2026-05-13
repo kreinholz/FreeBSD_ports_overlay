@@ -1,6 +1,6 @@
-TIMESTAMP = 1777843214
-SHA256 (hrydgard-ppsspp-1.20.3.297.g540f0d6-540f0d6_GH0.tar.gz) = be645bfc05226ffd2625b6cc1ba527ac4e29be9b5aa151579cd25284da1e9dc4
-SIZE (hrydgard-ppsspp-1.20.3.297.g540f0d6-540f0d6_GH0.tar.gz) = 38471319
+TIMESTAMP = 1778619104
+SHA256 (hrydgard-ppsspp-1.20.3.374.g57c8cc9-57c8cc9_GH0.tar.gz) = dd850e8033a252f4f1a68f3ea8021cb174fad44668fa9588adab4686337bf6b5
+SIZE (hrydgard-ppsspp-1.20.3.374.g57c8cc9-57c8cc9_GH0.tar.gz) = 38471443
 SHA256 (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = da3c61d2d47df12536a7977443387c1c3d7a750fe8c916c943860788b590db7e
 SIZE (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = 769418
 SHA256 (Kingcom-armips-v0.11.0-195-ga8d71f0_GH0.tar.gz) = 8a46d92b070de90cefcd89c2894344d040481e1cf6216b31f4a5e531254fed88
