@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.3.393.g7afd3d8
+PORTVERSION=	1.20.4.180.g9334077
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -11,12 +11,11 @@ LICENSE_COMB=	multi
 LICENSE_FILE=	${WRKSRC}/LICENSE.TXT
 
 # Bi-endian architectures default to big for some reason
-NOT_FOR_ARCHS=	mips mips64 powerpc powerpc64 powerpcspe
+NOT_FOR_ARCHS=	powerpc powerpc64 powerpcspe
 NOT_FOR_ARCHS_REASON=	only little-endian is supported, see \
 		https://github.com/hrydgard/ppsspp/issues/8823
 
-BUILD_DEPENDS=	${LOCALBASE}/ffmpeg3/lib/libavcodec.a:multimedia/ffmpeg3 \
-		rapidjson>0:devel/rapidjson
+BUILD_DEPENDS=	rapidjson>0:devel/rapidjson
 
 LIB_DEPENDS=	libzip.so:archivers/libzip \
 		libsnappy.so:archivers/snappy \
@@ -32,23 +31,25 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	7afd3d8
+GH_TAGNAME=	9334077
 GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
+		hrydgard:ppsspp-ffmpeg:18bbf9bf443ff2baceebab63cba85b9314a88b83:ppssppffmpeg/ffmpeg \
 		Kingcom:armips:v0.11.0-195-ga8d71f0:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \
 		KhronosGroup:SPIRV-Cross:4212eef67ed0ca048cb726a6767185504e7695e5:SPIRVCross/ext/SPIRV-Cross \
 		unknownbrackets:ppsspp-debugger:9776332f720c854ef26f325a0cf9e32c02115a9c:ppssppdebugger/assets/debugger \
 		google:cpu_features:v0.4.1-211-gfd4ffc1:cpu_features/ext/cpu_features \
-		RetroAchievements:rcheevos:v12.3.0-5-g50d7917:rcheevos/ext/rcheevos \
+		RetroAchievements:rcheevos:v12.3.0-8-gebfe8ca:rcheevos/ext/rcheevos \
 		erkkah:naett:5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302:naett/ext/naett \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
 		Kethen:aemu_postoffice:530fee545c27ffb8524a8f496cbbcfdb687fe8c5:aemu_postoffice/ext/aemu_postoffice \
-		Kingcom:filesystem:v1.3.2-12-g3f1c185:filesystem/ext/armips/ext/filesystem
+		Kingcom:filesystem:v1.1.2-171-g3f1c185:filesystem/ext/armips/ext/filesystem
 EXCLUDE=	libzip zlib
 USE_GL=		glew opengl
 CMAKE_ON=	${FREETYPE LIBCHDR LIBZIP MINIUPNPC RAPIDJSON SNAPPY \
-		ZSTD:L:S/^/USE_SYSTEM_/} USE_VULKAN_DISPLAY_KHR
+		ZSTD:L:S/^/USE_SYSTEM_/} BUILD_BUNDLED_FFMPEG \
+		USE_VULKAN_DISPLAY_KHR
 CMAKE_OFF=	USE_DISCORD
 LDFLAGS+=	-Wl,--as-needed # ICE/SM/X11/Xext
 CONFLICTS_INSTALL=	${PORTNAME}-*
@@ -86,7 +87,6 @@ post-patch:
 	@${REINPLACE_CMD} -e 's/Linux/${OPSYS}/' ${WRKSRC}/assets/gamecontrollerdb.txt
 	@${REINPLACE_CMD} -e 's,/usr/share,${PREFIX}/share,' ${WRKSRC}/UI/NativeApp.cpp
 	@${REINPLACE_CMD} -e 's/"unknown"/"${DISTVERSIONFULL}"/' ${WRKSRC}/git-version.cmake
-	@${REINPLACE_CMD} -e 's|%%LOCALBASE%%|${LOCALBASE}|' ${WRKSRC}/cmake/Modules/FindFFmpeg.cmake
 
 do-install-LIBRETRO-on:
 	${MKDIR} ${STAGEDIR}${PREFIX}/${LIBRETRO_PLIST_FILES:H}
