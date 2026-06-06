@@ -1,8 +1,14 @@
+PORTNAME=	azahar
 PKGNAMEPREFIX=	libretro-
 
+COMMENT=	Libretro core for Azahar 3DS emulator
 MASTERDIR=	${.CURDIR}/../azahar
 
-OPTIONS_EXCLUDE=	${OPTIONS_DEFINE}
-OPTIONS_SLAVE=		LIBRETRO
+AZAHAR_SLAVE=	libretro
+
+PLIST=
+PLIST_FILES=	lib/libretro/${PORTNAME}_libretro.so
+
+OPTIONS_DEFINE=	
 
 .include "${MASTERDIR}/Makefile"

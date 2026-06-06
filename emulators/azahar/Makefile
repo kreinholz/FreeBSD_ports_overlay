@@ -61,20 +61,6 @@ LDFLAGS+=	-Wl,--as-needed
 
 OPTIONS_DEFINE=		ALSA FFMPEG JACK PULSEAUDIO SNDIO VULKAN
 OPTIONS_DEFAULT=	FFMPEG JACK PULSEAUDIO SNDIO VULKAN
-OPTIONS_SINGLE=		GUI
-OPTIONS_SINGLE_GUI=	LIBRETRO QT
-OPTIONS_EXCLUDE:=	${OPTIONS_EXCLUDE} ${OPTIONS_SINGLE_GUI}
-OPTIONS_SLAVE?=		QT
-
-LIBRETRO_DESC=		libretro core for games/retroarch
-LIBRETRO_CMAKE_BOOL=	ENABLE_LIBRETRO
-LIBRETRO_PLIST_FILES=	lib/libretro/${PORTNAME}_libretro.so
-LIBRETRO_VARS=		CONFLICTS_INSTALL= DESKTOP_ENTRIES= PLIST= PORTDATA= PKGMESSAGE= SUB_FILES=
-LIBRETRO_CFLAGS=	-fPIC
-QT_USES=		desktop-file-utils qt:6 shared-mime-info sdl
-USE_SDL=		sdl2
-QT_CMAKE_BOOL=		ENABLE_QT ENABLE_QT_TRANSLATION ENABLE_SDL2
-USE_QT+=		base multimedia tools translations svg
 
 ALSA_BUILD_DEPENDS=	alsa-lib>0:audio/alsa-lib
 ALSA_CMAKE_BOOL=	USE_ALSA
@@ -95,6 +81,19 @@ VULKAN_DESC=		Vulkan renderer (experimental)
 VULKAN_BUILD_DEPENDS=	vulkan-headers>0:graphics/vulkan-headers
 VULKAN_CMAKE_BOOL=	ENABLE_VULKAN
 
+.if !defined(AZAHAR_SLAVE)
+CMAKE_ON+=		ENABLE_QT ENABLE_QT_TRANSLATION ENABLE_SDL2
+
+USES+=			desktop-file-utils qt:6 shared-mime-info sdl
+USE_SDL=		sdl2
+USE_QT+=		base multimedia tools translations svg
+.endif
+
+.if defined(AZAHAR_SLAVE)
+CMAKE_ON+=		ENABLE_LIBRETRO
+CFLAGS+=		-fPIC
+.endif
+
 .include <bsd.port.pre.mk>
 
 post-patch:
@@ -103,17 +102,17 @@ post-patch:
 		-e 's/@BUILD_FULLNAME@/${PORTVERSION}/' \
 		${WRKSRC}/src/common/scm_rev.cpp.in
 
-do-install-LIBRETRO-on:
-	${MKDIR} ${STAGEDIR}${PREFIX}/${LIBRETRO_PLIST_FILES:H}
+.if defined(AZAHAR_SLAVE)
+do-install:
+	@${MKDIR} ${STAGEDIR}${PREFIX}/lib/libretro
 	${INSTALL_LIB} ${BUILD_WRKSRC}/bin/Release/${PORTNAME}_libretro.so \
-		${STAGEDIR}${PREFIX}/${LIBRETRO_PLIST_FILES:H}
-.if ${OPTIONS_SLAVE} == LIBRETRO
+		${STAGEDIR}${PREFIX}/lib/libretro/
 .  for d in applications icons mime ${PORTNAME}
 	${RM} -r ${STAGEDIR}${PREFIX}/share/${d}
 .  endfor
-.endif
-
-do-install-QT-on:
+.else
+post-install:
 	${RM} ${STAGEDIR}${PREFIX}/lib/libcitra_room.a
+.endif
 
 .include <bsd.port.post.mk>
