@@ -82,11 +82,13 @@ VULKAN_BUILD_DEPENDS=	vulkan-headers>0:graphics/vulkan-headers
 VULKAN_CMAKE_BOOL=	ENABLE_VULKAN
 
 .if !defined(AZAHAR_SLAVE)
-CMAKE_ON+=		ENABLE_QT ENABLE_QT_TRANSLATION ENABLE_SDL2
-
-USES+=			desktop-file-utils qt:6 shared-mime-info sdl
+USES+=			desktop-file-utils qt:6 sdl shared-mime-info
+USE_QT=			base multimedia svg tools:build translations:run
 USE_SDL=		sdl2
-USE_QT+=		base multimedia tools translations svg
+
+CMAKE_ARGS+=		-DENABLE_QT:BOOL=ON \
+			-DENABLE_QT_TRANSLATION:BOOL=ON \
+			-DENABLE_SDL2:BOOL=ON
 .endif
 
 .if defined(AZAHAR_SLAVE)
