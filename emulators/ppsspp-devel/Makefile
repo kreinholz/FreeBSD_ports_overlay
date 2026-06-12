@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.297.g0b2b61e
+PORTVERSION=	1.20.4.329.g9c8317f
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -17,13 +17,15 @@ NOT_FOR_ARCHS_REASON=	only little-endian is supported, see \
 
 BUILD_DEPENDS=	rapidjson>0:devel/rapidjson
 
-LIB_DEPENDS=	libzip.so:archivers/libzip \
-		libsnappy.so:archivers/snappy \
-		libzstd.so:archivers/zstd \
+LIB_DEPENDS=	libchdr.so:devel/libchdr \
+		libfreetype.so:print/freetype2 \
 		libminiupnpc.so:net/miniupnpc \
 		libopenxr_loader.so:graphics/openxr \
-		libfreetype.so:print/freetype2 \
-		libchdr.so:devel/libchdr
+		libpng.so:graphics/png \
+		libsnappy.so:archivers/snappy \
+		libzip.so:archivers/libzip \
+		libzstd.so:archivers/zstd
+		
 RUN_DEPENDS=	xdg-open:devel/xdg-utils
 
 USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
@@ -31,7 +33,7 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	0b2b61e
+GH_TAGNAME=	9c8317f
 GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
 		hrydgard:ppsspp-ffmpeg:18bbf9bf443ff2baceebab63cba85b9314a88b83:ppssppffmpeg/ffmpeg \
 		Kingcom:armips:v0.11.0-195-ga8d71f0:armips/ext/armips \
@@ -53,33 +55,29 @@ CMAKE_ON=	${FREETYPE LIBCHDR LIBZIP MINIUPNPC RAPIDJSON SNAPPY \
 CMAKE_OFF=	USE_DISCORD
 LDFLAGS+=	-Wl,--as-needed # ICE/SM/X11/Xext
 CONFLICTS_INSTALL=	${PORTNAME}-*
+EXTRACT_AFTER_ARGS=	${EXCLUDE:S,^,--exclude ,}
+
+OPTIONS_DEFINE=		VULKAN
+OPTIONS_DEFAULT=	VULKAN
+.if !defined(PPSSPP_SLAVE)
+USES+=			shared-mime-info sdl
+USE_SDL=		sdl2
+ELF_FEATURES=		wxneeded:bin/${PORTNAME}
+PORTDATA=		assets
 DESKTOP_ENTRIES=	"PPSSPP" \
 			"" \
 			"${PORTNAME}" \
 			"${PORTNAME} %f" \
-			"Game;Emulator;" \
+			"Game;Emulators;" \
 			""
-EXTRACT_AFTER_ARGS=	${EXCLUDE:S,^,--exclude ,}
-PORTDATA=	assets
+.endif
 
-OPTIONS_DEFINE=		VULKAN
-OPTIONS_DEFAULT=	VULKAN
-OPTIONS_SINGLE=		GUI
-OPTIONS_SINGLE_GUI=	LIBRETRO SDL
-OPTIONS_EXCLUDE:=	${OPTIONS_EXCLUDE} ${OPTIONS_SINGLE_GUI}
-OPTIONS_SLAVE?=		SDL
+.if defined(PPSSPP_SLAVE)
+CMAKE_ON+=		LIBRETRO
+VARS=			CONFLICTS_INSTALL= DESKTOP_ENTRIES= PLIST= PORTDATA= PKGMESSAGE= SUB_FILES=
+.endif
 
-LIBRETRO_DESC=		libretro core for games/retroarch
 VULKAN_DESC=		Vulkan renderer
-LIBRETRO_LIB_DEPENDS=	libpng.so:graphics/png
-LIBRETRO_CMAKE_BOOL=	LIBRETRO
-LIBRETRO_PLIST_FILES=	lib/libretro/${PORTNAME}_libretro.so
-LIBRETRO_VARS=		CONFLICTS_INSTALL= DESKTOP_ENTRIES= PLIST= PORTDATA= PKGMESSAGE= SUB_FILES=
-SDL_CATEGORIES=		wayland
-SDL_LIB_DEPENDS=	libpng.so:graphics/png
-SDL_USES=		shared-mime-info sdl
-SDL_USE=		SDL=sdl2
-SDL_VARS=		EXENAME=PPSSPPSDL
 VULKAN_RUN_DEPENDS=	${LOCALBASE}/lib/libvulkan.so:graphics/vulkan-loader
 
 post-patch:
@@ -87,20 +85,17 @@ post-patch:
 	@${REINPLACE_CMD} -e 's,/usr/share,${PREFIX}/share,' ${WRKSRC}/UI/NativeApp.cpp
 	@${REINPLACE_CMD} -e 's/"unknown"/"${DISTVERSIONFULL}"/' ${WRKSRC}/git-version.cmake
 
-do-install-LIBRETRO-on:
-	${MKDIR} ${STAGEDIR}${PREFIX}/${LIBRETRO_PLIST_FILES:H}
-	${INSTALL_LIB} ${BUILD_WRKSRC}/lib/${LIBRETRO_PLIST_FILES:T} \
-		${STAGEDIR}${PREFIX}/${LIBRETRO_PLIST_FILES:H}
-.if ${OPTIONS_SLAVE} == LIBRETRO
-.  for d in applications icons mime ${PORTNAME}
+.if defined(PPSSPP_SLAVE)
+do-install:
+	@${MKDIR} ${STAGEDIR}${PREFIX}/lib/libretro
+	${INSTALL_LIB} ${BUILD_WRKSRC}/lib/${PORTNAME}_libretro.so \
+		${STAGEDIR}${PREFIX}/lib/libretro/
+.for d in applications icons mime ${PORTNAME}
 	${RM} -r ${STAGEDIR}${PREFIX}/share/${d}
-.  endfor
+.endfor
+.else
+post-install:
+	${MV} ${STAGEDIR}${PREFIX}/bin/PPSSPPSDL ${STAGEDIR}${PREFIX}/bin/${PORTNAME}
 .endif
-
-do-install-SDL-on:
-.if exists(/usr/bin/elfctl)
-	${ELFCTL} -e +wxneeded ${STAGEDIR}${PREFIX}/bin/*
-.endif
-	${MV} ${STAGEDIR}${PREFIX}/bin/${EXENAME} ${STAGEDIR}${PREFIX}/bin/${PORTNAME}
 
 .include <bsd.port.mk>

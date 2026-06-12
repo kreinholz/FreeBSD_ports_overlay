@@ -1,8 +1,14 @@
-PKGNAMEPREFIX=	libretro-
+PORTNAME=		ppsspp
+PKGNAMEPREFIX=		libretro-
 
-MASTERDIR=	${.CURDIR}/../ppsspp
+COMMENT=		Libretro core for games/retroarch
+MASTERDIR=		${.CURDIR}/../ppsspp-devel
 
-OPTIONS_EXCLUDE=	${OPTIONS_DEFINE}
-OPTIONS_SLAVE=		LIBRETRO
+PPSSPP_SLAVE=		libretro
+
+PLIST=
+PLIST_FILES=		lib/libretro/${PORTNAME}_libretro.so
+
+OPTIONS_DEFINE=	
 
 .include "${MASTERDIR}/Makefile"
