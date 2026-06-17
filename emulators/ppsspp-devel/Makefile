@@ -61,7 +61,7 @@ OPTIONS_DEFINE=		VULKAN
 OPTIONS_DEFAULT=	VULKAN
 .if !defined(PPSSPP_SLAVE)
 USES+=			shared-mime-info sdl
-USE_SDL=		sdl2
+USE_SDL=		sdl3 ttf3
 ELF_FEATURES=		wxneeded:bin/${PORTNAME}
 PORTDATA=		assets
 DESKTOP_ENTRIES=	"PPSSPP" \
