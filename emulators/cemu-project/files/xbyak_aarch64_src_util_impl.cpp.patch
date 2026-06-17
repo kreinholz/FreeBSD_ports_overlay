@@ -1,0 +1,20 @@
+--- /src/util_impl.cpp.orig	2025-04-04 21:01:05.000000000 -0700
++++ /src/util_impl.cpp	2026-06-15 20:49:21.583993000 -0700
+@@ -29,6 +29,8 @@
+ #include "util_impl_mac.h"
+ #elif defined(_M_ARM64)
+ #include "util_impl_windows.h"
++#elif defined(__FreeBSD__)
++#include "util_impl_freebsd.h"
+ #else
+ #error "Unsupported OS"
+ #endif
+@@ -156,6 +158,8 @@
+   info = new CpuInfoMac();
+ #elif defined(_M_ARM64)
+   info = new CpuInfoWindows();
++#elif defined(__FreeBSD__)
++  info = new CpuInfoFreeBSD();
+ #endif
+ }
+ 

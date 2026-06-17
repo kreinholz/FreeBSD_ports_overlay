@@ -2,7 +2,7 @@ PORTNAME=		ppsspp
 PKGNAMEPREFIX=		libretro-
 
 COMMENT=		Libretro core for games/retroarch
-MASTERDIR=		${.CURDIR}/../ppsspp-devel
+MASTERDIR=		${.CURDIR}/../ppsspp
 
 PPSSPP_SLAVE=		libretro
 

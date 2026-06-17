@@ -1,0 +1,11 @@
+--- /xbyak_aarch64/xbyak_aarch64_util.h.orig	2025-04-04 21:01:05.000000000 -0700
++++ /xbyak_aarch64/xbyak_aarch64_util.h	2026-06-15 20:49:21.589398000 -0700
+@@ -17,7 +17,7 @@
+ #ifndef XBYAK_AARCH64_UTIL_H_
+ #define XBYAK_AARCH64_UTIL_H_
+ 
+-#if !(defined(__linux__) || defined(__APPLE__) || defined(_M_ARM64))
++#if !(defined(__linux__) || defined(__APPLE__) || defined(_M_ARM64) || defined(__FreeBSD__))
+ #error "Unsupported OS"
+ #endif
+ 

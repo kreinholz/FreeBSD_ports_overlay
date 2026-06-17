@@ -1,6 +1,6 @@
-TIMESTAMP = 1781212747
-SHA256 (cemu-project-Cemu-2.6.238.g65a3733-65a3733_GH0.tar.gz) = 7f8217dc6f32f722a05b2018edbd04870c27ef20a6d42e67729cb2c1584a2c01
-SIZE (cemu-project-Cemu-2.6.238.g65a3733-65a3733_GH0.tar.gz) = 21329655
+TIMESTAMP = 1781649608
+SHA256 (cemu-project-Cemu-2.6.240.gfe70fdc-fe70fdc_GH0.tar.gz) = 3ff5152f0adb722713e31724e0a2127cd46452e436170d2f357df2332e1ffd2f
+SIZE (cemu-project-Cemu-2.6.240.gfe70fdc-fe70fdc_GH0.tar.gz) = 21330452
 SHA256 (mozilla-cubeb-2071354a69aca7ed6df3b4222e305746c2113f60_GH0.tar.gz) = 4d33e013518ece94a74bee8c5ead7c257cc2050a3dce4cd83192a81f39b2c892
 SIZE (mozilla-cubeb-2071354a69aca7ed6df3b4222e305746c2113f60_GH0.tar.gz) = 227176
 SHA256 (arsenm-sanitizers-cmake-aab6948fa863bc1cbe5d0850bc46b9ef02ed4c1a_GH0.tar.gz) = 9f5b073625375322236a94ce8d2d803cdedad321c91e63845f487b9ebfb2c433
@@ -9,3 +9,5 @@ SHA256 (Exzap-ZArchive-d2c717730092c7bf8cbb033b12fd4001b7c4d932_GH0.tar.gz) = 96
 SIZE (Exzap-ZArchive-d2c717730092c7bf8cbb033b12fd4001b7c4d932_GH0.tar.gz) = 19782
 SHA256 (ocornut-imgui-f65bcf481ab34cd07d3909aab1479f409fa79f2f_GH0.tar.gz) = fc2f2f72e18a680b9ba141194ff5b35c940a11e58784d5d22aac7c8d7224592b
 SIZE (ocornut-imgui-f65bcf481ab34cd07d3909aab1479f409fa79f2f_GH0.tar.gz) = 1571863
+SHA256 (fujitsu-xbyak_aarch64-v1.1.1-20-g904b892_GH0.tar.gz) = 1442b4f13ded4a7b2305c5e480ad9d7e6fde0bdd1907ec6c77f023d3d3beb33f
+SIZE (fujitsu-xbyak_aarch64-v1.1.1-20-g904b892_GH0.tar.gz) = 912718

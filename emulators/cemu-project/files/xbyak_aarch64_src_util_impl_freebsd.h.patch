@@ -1,0 +1,212 @@
+--- /dev/null	2026-06-15 20:53:10.966090000 -0700
++++ /src/util_impl_freebsd.h	2026-06-15 20:49:21.582873000 -0700
+@@ -0,0 +1,209 @@
++#ifndef __FreeBSD__
++#error "Something wrong"
++#endif
++
++#include <stdint.h>
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <sys/auxv.h>
++#include <sys/sysctl.h>
++
++#include "xbyak_aarch64_err.h"
++#include "xbyak_aarch64_util.h"
++
++namespace Xbyak_aarch64 {
++namespace util {
++
++constexpr char hw_ncpu[] = "hw.ncpu";
++
++class CpuInfoFreeBSD : public CpuInfo {
++public:
++  CpuInfoFreeBSD() {
++    init();
++	setSysRegVal(); // Read MIDR_EL1 before setCacheHierarchy().
++    setNumCores();
++    setHwCap();
++    setCacheHierarchy();
++    setImplementer();
++  }
++
++private:
++  uint8_t sysInfoBuf_[128];
++
++  int getSysInfo(char const *name, const size_t len) {
++    size_t len_ = len;
++    int retVal;
++
++    if ((retVal = sysctlbyname(name, sysInfoBuf_, &len_, NULL, 0)) != 0)
++      memset(sysInfoBuf_, 0, sizeof(sysInfoBuf_));
++
++    return retVal;
++  }
++  
++  void setNumCores() {
++    // ToDo: Distinguish physical and logical cores
++    getSysInfo(hw_ncpu, sizeof(int32_t));
++    numCores_[0] = numCores_[1] = ((int32_t *)sysInfoBuf_)[0];
++  }
++  
++  void setSysRegVal() {
++  	uint64_t midr = 0;
++  	asm volatile("mrs %0, midr_el1" : "=r"(midr));
++  	cacheInfo_.midr_el1 = midr;
++  }
++  
++  // The following setCacheHierarchy function was largely written by Gemini AI
++  void setCacheHierarchy() {
++  
++	uint64_t midr = cacheInfo_.midr_el1;
++    uint32_t implementer = (midr >> 24) & 0xFF;
++    uint32_t part_num    = (midr >> 4)  & 0xFFF;
++
++	// FreeBSD doesn't let us directly query the cache sizes, so hardcode some common ARM64 types with safe fallback
++	#define SAFE_L1I_SIZE   (64 * 1024)   // 64 KB (The modern AArch64 sweet spot)
++	#define SAFE_L1D_SIZE   (64 * 1024)   // 64 KB 
++	#define SAFE_L2_SIZE    (1024 * 1024) // 1 MB (Safe midpoint for shared/per-core layout)
++	#define SAFE_L3_SIZE    (0)           // 0 KB  (Treating L3 as 0 avoids aggressive prefetching traps)
++	#define SAFE_LINE_SIZE  64            // 64 Bytes (Virtually mandatory on ARM64)
++	// --- HARDWARE PROFILE: ARM Cortex-A57 ---    
++	if (implementer == 0x41 && part_num == 0xD07) {
++		cacheInfo_.levelCache[0].type = SeparateCache;
++		cacheInfo_.levelCache[0].size[0] = 48 * 1024; // I-Cache
++		cacheInfo_.levelCache[0].size[1] = 32 * 1024; // D-Cache
++
++		cacheInfo_.levelCache[1].type = UnifiedCache;
++		cacheInfo_.levelCache[1].size[2] = 2048 * 1024; // Shared L2 Cluster
++
++		cacheInfo_.levelCache[2].type = UnifiedCache;
++		cacheInfo_.levelCache[2].size[2] = 0; // No L3
++        
++		cacheInfo_.levelCache[0].sharingCores[0] = 1;
++		cacheInfo_.levelCache[0].sharingCores[1] = 1;
++		cacheInfo_.levelCache[1].sharingCores[2] = 4; // Shared quad-core cluster layout
++		cacheInfo_.levelCache[2].sharingCores[2] = 0;
++	// --- HARDWARE PROFILE: ARM Cortex-A72 ---
++	} else if (implementer == 0x41 && part_num == 0xD08) {
++		cacheInfo_.levelCache[0].type = SeparateCache;
++		cacheInfo_.levelCache[0].size[0] = 48 * 1024;
++		cacheInfo_.levelCache[0].size[1] = 32 * 1024;
++
++		cacheInfo_.levelCache[1].type = UnifiedCache;
++		cacheInfo_.levelCache[1].size[2] = 1024 * 1024; // 1MB-2MB L2 shared
++
++		cacheInfo_.levelCache[2].type = UnifiedCache;
++		cacheInfo_.levelCache[2].size[2] = 0; 
++        
++		cacheInfo_.levelCache[0].sharingCores[0] = 1;
++		cacheInfo_.levelCache[0].sharingCores[1] = 1;
++		cacheInfo_.levelCache[1].sharingCores[2] = 4;
++		cacheInfo_.levelCache[2].sharingCores[2] = 0;
++	// --- HARDWARE PROFILE: ARM Neoverse Cores (N1, V1, V2) ---
++	} else if (implementer == 0x41 && (part_num == 0xD0C || part_num == 0xD40 || part_num == 0xD4F)) {
++		cacheInfo_.levelCache[0].type = SeparateCache;
++		cacheInfo_.levelCache[0].size[0] = 64 * 1024; // 64KB I-Cache
++		cacheInfo_.levelCache[0].size[1] = 64 * 1024; // 64KB D-Cache
++
++		cacheInfo_.levelCache[1].type = UnifiedCache;
++		cacheInfo_.levelCache[1].size[2] = 1024 * 1024; // Dedicated 1MB L2 per core
++
++		cacheInfo_.levelCache[2].type = UnifiedCache;
++		cacheInfo_.levelCache[2].size[2] = 2048 * 1024; // Shared Mesh L3 Segment
++        
++		cacheInfo_.levelCache[0].sharingCores[0] = 1;
++		cacheInfo_.levelCache[0].sharingCores[1] = 1;
++		cacheInfo_.levelCache[1].sharingCores[2] = 1; // Core-private L2
++	cacheInfo_.levelCache[2].sharingCores[2] = 8; // Shared Mesh cluster node
++	// --- HARDWARE PROFILE: Apple Silicon ---
++	} else if (implementer == 0xFE) {
++		cacheInfo_.levelCache[0].type = SeparateCache;
++		cacheInfo_.levelCache[0].size[0] = 192 * 1024; 
++		cacheInfo_.levelCache[0].size[1] = 128 * 1024; 
++
++		cacheInfo_.levelCache[1].type = UnifiedCache;
++		cacheInfo_.levelCache[1].size[2] = 12 * 1024 * 1024; // Shared Performance Cluster L2
++
++		cacheInfo_.levelCache[2].type = UnifiedCache;
++		cacheInfo_.levelCache[2].size[2] = 0;
++
++		cacheInfo_.levelCache[0].sharingCores[0] = 1;
++		cacheInfo_.levelCache[0].sharingCores[1] = 1;
++		cacheInfo_.levelCache[1].sharingCores[2] = 4;
++		cacheInfo_.levelCache[2].sharingCores[2] = 0;
++	// --- FALLBACK PROFILE: Universal Safe Defaults ---
++	} else {
++		cacheInfo_.levelCache[0].type = SeparateCache;
++		cacheInfo_.levelCache[0].size[0] = SAFE_L1I_SIZE;
++		cacheInfo_.levelCache[0].size[1] = SAFE_L1D_SIZE;
++
++		cacheInfo_.levelCache[1].type = UnifiedCache;
++		cacheInfo_.levelCache[1].size[2] = SAFE_L2_SIZE;
++
++		cacheInfo_.levelCache[2].type = UnifiedCache;
++		cacheInfo_.levelCache[2].size[2] = SAFE_L3_SIZE;
++
++		for (size_t i = 0; i < 3; i++) {
++			cacheInfo_.levelCache[i].sharingCores[0] = 1;
++			cacheInfo_.levelCache[i].sharingCores[1] = 1;
++			cacheInfo_.levelCache[i].sharingCores[2] = 1;
++		}
++	}
++
++	// Resolve lastDataCacheLevel_
++	for (size_t i = 0; i < maxCacheLevel; i++) {
++		const auto cache = &cacheInfo_.levelCache[i];
++		if (cache->size[1] || cache->size[2])
++			lastDataCacheLevel_ = i + 1;
++	}
++  }
++  
++  void setHwCap() {
++  	u_long hwcap = 0;
++  	u_long hwcap2 = 0;
++	bool has_hwcap = (elf_aux_info(AT_HWCAP, &hwcap, sizeof(hwcap)) == 0);
++	bool has_hwcap2 = (elf_aux_info(AT_HWCAP2, &hwcap2, sizeof(hwcap2)) == 0);
++	
++	// ARM_V8 Instructions should *always* be available on aarch64/arm64
++	type_ |= (Type)XBYAK_AARCH64_HWCAP_ADVSIMD;
++	
++	// Test for the other processor features
++	if (has_hwcap) {
++		if (hwcap & HWCAP_ATOMICS)
++			type_ |= (Type)XBYAK_AARCH64_HWCAP_ATOMIC;
++		if (hwcap & HWCAP_FP)
++			type_ |= (Type)XBYAK_AARCH64_HWCAP_FP;
++		if (hwcap & HWCAP_ASIMD)
++			type_ |= (Type)XBYAK_AARCH64_HWCAP_ADVSIMD;
++		if (hwcap & HWCAP_CRC32)
++			type_ |= (Type)XBYAK_AARCH64_HWCAP_CRC;
++    	if (hwcap & HWCAP_JSCVT)
++			type_ |= (Type)XBYAK_AARCH64_HWCAP_JSCVT;
++			
++#ifdef HWCAP_SVE
++		if (hwcap & HWCAP_SVE) {
++			type_ |= (Type)XBYAK_AARCH64_HWCAP_SVE;
++            
++			// Native cross-platform way to get SVE vector length in bytes
++			uint64_t vl_bytes;
++			asm volatile (
++				".arch armv8-a+sve\n"
++				"cntb %0\n"
++				".arch armv8-a\n"
++				: "=r"(vl_bytes)
++			);
++			sveLen_ = (sveLen_t)vl_bytes;
++		}
++#endif
++	}
++
++  if (has_hwcap2) {
++#ifdef HWCAP2_BF16
++	if (hwcap2 & HWCAP2_BF16)
++		type_ |= (Type)XBYAK_AARCH64_HWCAP_BF16;
++#endif
++	}
++  }
++};
++
++} // namespace util
++} // namespace Xbyak_aarch64

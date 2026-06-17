@@ -13,7 +13,7 @@ LICENSE_COMB=	multi
 LICENSE_FILE_GPLv2+ =	${WRKSRC}/license.txt
 LICENSE_FILE_ISCL=	${WRKSRC}/externals/cubeb/LICENSE
 
-#BROKEN_aarch64=	build fails on aarch64 with system boost-libs
+BROKEN_aarch64=	build fails on aarch64 with system boost-libs
 
 BUILD_DEPENDS=	nlohmann-json>0:devel/nlohmann-json \
 		cpp-httplib>0:www/cpp-httplib \
@@ -56,10 +56,6 @@ CMAKE_ON=	Boost_USE_SHARED_LIBS \
 
 CMAKE_OFF=	ENABLE_LIBUSB \
 		ENABLE_OPENAL
-
-.if ${ARCH} == "aarch64"
-CMAKE_ARGS+=	-DCMAKE_CXX_FLAGS="-D__builtin_va_list=va_list"
-.endif
 
 LDFLAGS+=	-Wl,--as-needed
 
