@@ -1,6 +1,6 @@
-TIMESTAMP = 1782147047
-SHA256 (hrydgard-ppsspp-1.20.4.424.g676724e-676724e_GH0.tar.gz) = 5dc09695ae44011dfc33c346a75e1398206e9a75d937e0bf4e360e9c6cb3ba05
-SIZE (hrydgard-ppsspp-1.20.4.424.g676724e-676724e_GH0.tar.gz) = 38566941
+TIMESTAMP = 1783088692
+SHA256 (hrydgard-ppsspp-1.20.4.474.g171db92-171db92_GH0.tar.gz) = 0de25e1575016e323996b4f82402e056077f006d867cecd092af617bfc3b5a69
+SIZE (hrydgard-ppsspp-1.20.4.474.g171db92-171db92_GH0.tar.gz) = 38563576
 SHA256 (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = da3c61d2d47df12536a7977443387c1c3d7a750fe8c916c943860788b590db7e
 SIZE (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = 769418
 SHA256 (hrydgard-ppsspp-ffmpeg-18bbf9bf443ff2baceebab63cba85b9314a88b83_GH0.tar.gz) = 134f78d4ebdc47468939d15e29c2c1d5650e115c340996f3836731c3337e188f
@@ -15,8 +15,8 @@ SHA256 (unknownbrackets-ppsspp-debugger-9776332f720c854ef26f325a0cf9e32c02115a9c
 SIZE (unknownbrackets-ppsspp-debugger-9776332f720c854ef26f325a0cf9e32c02115a9c_GH0.tar.gz) = 810347
 SHA256 (google-cpu_features-v0.4.1-211-gfd4ffc1_GH0.tar.gz) = 20115fd59cf2db71594d71acf3dacfdaf6c1bdf54c1656f781fce4844a803e08
 SIZE (google-cpu_features-v0.4.1-211-gfd4ffc1_GH0.tar.gz) = 109042
-SHA256 (RetroAchievements-rcheevos-v12.3.0-8-gebfe8ca_GH0.tar.gz) = 8f6d077b3faaa92fd55aeaf681887066b1d5fea6e69803d6fe9051d210c9b0e4
-SIZE (RetroAchievements-rcheevos-v12.3.0-8-gebfe8ca_GH0.tar.gz) = 438202
+SHA256 (RetroAchievements-rcheevos-v12.3.0-18-g2ac45d3_GH0.tar.gz) = cc75b46a31d5ff3da823c49b5a2ba294c8ddfb097460cb298c770a76be8a7db3
+SIZE (RetroAchievements-rcheevos-v12.3.0-18-g2ac45d3_GH0.tar.gz) = 443785
 SHA256 (erkkah-naett-5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302_GH0.tar.gz) = 65b68d645290ecd7478747d52feebf73b390021137a10897cc2a692bf6446afe
 SIZE (erkkah-naett-5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302_GH0.tar.gz) = 88388
 SHA256 (hrydgard-ppsspp-lua-7648485f14e8e5ee45e8e39b1eb4d3206dbd405a_GH0.tar.gz) = ee31027159979d7be564e19710e10339179992f6d663d38337e78340dd31987b

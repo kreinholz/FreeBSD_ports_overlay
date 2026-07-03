@@ -33,12 +33,12 @@ BUILD_DEPENDS=	gdb>0:devel/gdb \
 		libtasn1>0:security/libtasn1 \
 		mtools>0:filesystems/mtools \
 		opencv>0:graphics/opencv \
-		py311-pillow>0:graphics/py-pillow \
-		py311-pip>0:devel/py-pip \
-		py311-pyyaml>0:devel/py-pyyaml \
-		py311-sphinx>0:textproc/py-sphinx \
-		py311-sphinx_rtd_theme>0:textproc/py-sphinx_rtd_theme \
-		py311-tomli>0:textproc/py-tomli \
+		py312-pillow>0:graphics/py-pillow \
+		py312-pip>0:devel/py-pip \
+		py312-pyyaml>0:devel/py-pyyaml \
+		py312-sphinx>0:textproc/py-sphinx \
+		py312-sphinx_rtd_theme>0:textproc/py-sphinx_rtd_theme \
+		py312-tomli>0:textproc/py-tomli \
 		rpm2cpio>0:archivers/rpm2cpio \
 		socat>0:net/socat \
 		tesseract>0:graphics/tesseract \
