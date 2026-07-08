@@ -1,6 +1,6 @@
 PORTNAME=	wx
 DISTVERSIONPREFIX=	v
-DISTVERSION=	3.3.2
+DISTVERSION=	3.3.3
 CATEGORIES=	x11-toolkits
 MASTER_SITES=	https://github.com/wxWidgets/wxWidgets/releases/download/v${DISTVERSION}/
 PKGNAMESUFFIX=	${_SHORT_WX_VER}-${FLAVOR}
@@ -9,6 +9,9 @@ DISTNAME=	wxWidgets-${DISTVERSION}
 MAINTAINER=	kreinholz@gmail.com
 COMMENT=	GUI toolkit (wxWidgets) with ${FLAVOR:S/k/&+/:tu} bindings
 WWW=		https://www.wxwidgets.org/
+
+# With update to version 3.3.3, release tarball doesn't follow standard naming
+WRKSRC=		${WRKDIR}/wxWidgets-v3.3.3.1
 
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/docs/gpl.txt
