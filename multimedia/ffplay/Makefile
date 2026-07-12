@@ -1,6 +1,5 @@
 PORTNAME=	ffplay
-DISTVERSION=	8.1.1
-PORTEPOCH=	1
+DISTVERSION=	8.1.2
 CATEGORIES=	multimedia audio net
 MASTER_SITES=	https://ffmpeg.org/releases/
 DISTNAME=	ffmpeg-${PORTVERSION}

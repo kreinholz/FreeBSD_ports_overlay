@@ -11,7 +11,7 @@ COMMENT=	GUI toolkit (wxWidgets) with ${FLAVOR:S/k/&+/:tu} bindings
 WWW=		https://www.wxwidgets.org/
 
 # With update to version 3.3.3, release tarball doesn't follow standard naming
-WRKSRC=		${WRKDIR}/wxWidgets-v3.3.3.1
+#WRKSRC=		${WRKDIR}/wxWidgets-v3.3.3.1 # Note: seems fixed
 
 LICENSE=	GPLv2+
 LICENSE_FILE=	${WRKSRC}/docs/gpl.txt
