@@ -1,4 +1,4 @@
---- launcher/HardwareInfo.cpp.orig	2026-07-16 15:50:59 UTC
+--- launcher/HardwareInfo.cpp.orig	2026-07-17 01:50:59 UTC
 +++ launcher/HardwareInfo.cpp
 @@ -21,12 +21,14 @@
  #include <QDebug>
