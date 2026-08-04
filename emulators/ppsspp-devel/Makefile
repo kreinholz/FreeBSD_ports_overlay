@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.660.g23d4c27
+PORTVERSION=	1.20.4.879.g3eeae2d
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -33,9 +33,9 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	23d4c27
+GH_TAGNAME=	3eeae2d
 GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
-		hrydgard:ppsspp-ffmpeg:18bbf9bf443ff2baceebab63cba85b9314a88b83:ppssppffmpeg/ffmpeg \
+		hrydgard:ppsspp-ffmpeg:b87f7c6d522d1edba77cfc4fac96ce48a236f806:ppssppffmpeg/ffmpeg \
 		Kingcom:armips:v0.11.0-217-g2d7f351:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \
 		KhronosGroup:SPIRV-Cross:4212eef67ed0ca048cb726a6767185504e7695e5:SPIRVCross/ext/SPIRV-Cross \
@@ -45,7 +45,7 @@ GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:lib
 		erkkah:naett:5f695cfa9fcbf30668a4d3ac4b4abf1cd89a1302:naett/ext/naett \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
-		Kethen:aemu_postoffice:d4dd0e90f411b7cd1a1a38610a3712f2b46a6bc7:aemu_postoffice/ext/aemu_postoffice \
+		Kethen:aemu_postoffice:9e533637b9a13bb0194c75cf43b0bf6d25d8101a:aemu_postoffice/ext/aemu_postoffice \
 		Kingcom:filesystem:v1.1.2-171-g3f1c185:filesystem/ext/armips/ext/filesystem
 EXCLUDE=	libzip zlib
 USE_GL=		glew opengl
