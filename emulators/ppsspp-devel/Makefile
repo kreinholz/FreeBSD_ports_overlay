@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.1122.g4d8a5d7
+PORTVERSION=	1.20.4.1186.g2e52881
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -33,10 +33,10 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	4d8a5d7
+GH_TAGNAME=	2e52881
 GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
 		hrydgard:ppsspp-ffmpeg:b87f7c6d522d1edba77cfc4fac96ce48a236f806:ppssppffmpeg/ffmpeg \
-		Kingcom:armips:v0.11.0-217-g2d7f351:armips/ext/armips \
+		Kingcom:armips:v0.11.0-219-g62adab4:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \
 		KhronosGroup:SPIRV-Cross:4212eef67ed0ca048cb726a6767185504e7695e5:SPIRVCross/ext/SPIRV-Cross \
 		unknownbrackets:ppsspp-debugger:9776332f720c854ef26f325a0cf9e32c02115a9c:ppssppdebugger/assets/debugger \
