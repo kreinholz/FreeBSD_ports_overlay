@@ -1,5 +1,5 @@
 PORTNAME=	azahar
-DISTVERSION=	2126.1
+DISTVERSION=	2126.1.1
 CATEGORIES=	emulators
 MASTER_SITES=	https://github.com/azahar-emu/${PORTNAME}/releases/download/${DISTVERSION}/
 DISTNAME=	${PORTNAME}-unified-source-${DISTVERSION}
