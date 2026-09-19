@@ -85,14 +85,14 @@ USES+=			desktop-file-utils qt:6 sdl shared-mime-info
 USE_QT=			base multimedia svg tools:build translations:run
 USE_SDL=		sdl2
 
-CMAKE_ARGS+=		-DENABLE_QT:BOOL=ON \
-			-DENABLE_QT_TRANSLATION:BOOL=ON \
-			-DENABLE_SDL2:BOOL=ON
+CMAKE_ON+=		ENABLE_QT \
+			ENABLE_QT_TRANSLATION \
+			ENABLE_SDL2
 .endif
 
 .if defined(AZAHAR_SLAVE)
-CMAKE_ON+=		ENABLE_LIBRETRO
-CFLAGS+=		-fPIC
+CMAKE_ON+=		ENABLE_LIBRETRO \
+			CMAKE_POSITION_INDEPENDENT_CODE
 .endif
 
 .include <bsd.port.pre.mk>
