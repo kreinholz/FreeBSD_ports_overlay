@@ -1,0 +1,9 @@
+TIMESTAMP = 1789935017
+SHA256 (microsoft-DirectXShaderCompiler-v1.10.2605.37_GH0.tar.gz) = c34c5b5100a4dafc1bd8885bfdd842dc93d90c22dc41343f8cd03e9c97afbf23
+SIZE (microsoft-DirectXShaderCompiler-v1.10.2605.37_GH0.tar.gz) = 24954925
+SHA256 (KhronosGroup-SPIRV-Headers-1.5.4.raytracing.fixed-498-g29981f6_GH0.tar.gz) = 511bf6d76924d56540ac82dc681e19b16e252924ac6225c80c178ce5b5c07f8f
+SIZE (KhronosGroup-SPIRV-Headers-1.5.4.raytracing.fixed-498-g29981f6_GH0.tar.gz) = 572035
+SHA256 (KhronosGroup-SPIRV-Tools-v2022.4-1308-g1c336172_GH0.tar.gz) = c8765265aab25e0162f0f53b369bcffedcfa4408c58fe5c9deeda47bee344ebf
+SIZE (KhronosGroup-SPIRV-Tools-v2022.4-1308-g1c336172_GH0.tar.gz) = 3530211
+SHA256 (microsoft-DirectX-Headers-980971e835876dc0cde415e8f9bc646e64667bf7_GH0.tar.gz) = b5a4b6d8806ff7f29f19879f83d015dbe8740676d4ca0b48647a789cc7773c4e
+SIZE (microsoft-DirectX-Headers-980971e835876dc0cde415e8f9bc646e64667bf7_GH0.tar.gz) = 326310

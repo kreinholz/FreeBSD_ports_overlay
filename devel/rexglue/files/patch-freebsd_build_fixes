@@ -1,29 +1,20 @@
---- CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
+--- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -114,6 +114,22 @@ endfunction()
-         RELWITHDEBINFO_POSTFIX "${CMAKE_RELWITHDEBINFO_POSTFIX}")
- endfunction()
+@@ -106,6 +106,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
+ set(CMAKE_DEBUG_POSTFIX d)
+ set(CMAKE_RELWITHDEBINFO_POSTFIX rd)
  
-+# Options to build against system libs instead of building bundled modules
-+option(USE_SYSTEM_SDL "Use system SDL3 instead of building bundled module" OFF)
-+option(USE_SYSTEM_SPDLOG "Use system spdlog instead of building bundled module" OFF)
-+option(USE_SYSTEM_FMT "Use system fmt instead of building bundled module" OFF)
-+option(USE_SYSTEM_IMGUI "Use system imgui instead of building bundled module" OFF)
-+
-+# rexglue-sdk won't build on FreeBSD with bundled modules of certain libs
++# Some extra help to build rexglue-sdk on FreeBSD
 +if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-+    set(USE_SYSTEM_SDL ON CACHE BOOL "Use system SDL3 instead of building bundled module" FORCE)
-+    set(USE_SYSTEM_SPDLOG ON CACHE BOOL "Use system spdlog instead of building bundled module" FORCE)
-+    set(USE_SYSTEM_FMT ON CACHE BOOL "Use system fmt instead of building bundled module" FORCE)
-+    set(USE_SYSTEM_IMGUI ON CACHE BOOL "Use system imgui instead of building bundled module" FORCE)
-+    # On FreeBSD, backtrace, needed by Tracy, is part of libexecinfo
++    # Tracy requires base system libexecinfo
 +    add_link_options("-lexecinfo")
 +endif()
 +
- if(NOT WIN32)
-     # Use appropriate code model based on architecture
-     if(CMAKE_SYSTEM_PROCESSOR MATCHES "AMD64|x86_64" AND NOT APPLE)
---- CMakePresets.json.orig	2026-08-21 22:10:13 UTC
+ # CMAKE_<CONFIG>_POSTFIX seeds libraries only, so without this every config of an
+ # executable installs over the last one.
+ function(rex_config_postfix target)
+
+--- CMakePresets.json.orig
 +++ CMakePresets.json
 @@ -47,9 +47,19 @@
                  "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}"
@@ -48,38 +39,9 @@
              }
          },
          {
---- cmake/rexglue_install.cmake.orig	2026-08-21 22:10:13 UTC
-+++ cmake/rexglue_install.cmake
-@@ -102,15 +102,17 @@ install(FILES
-     thirdparty/o1heap/o1heap/o1heap.h
-     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
- )
--install(FILES
--    thirdparty/imgui/imgui.h
--    thirdparty/imgui/imconfig.h
--    thirdparty/imgui/imgui_internal.h
--    thirdparty/imgui/imstb_rectpack.h
--    thirdparty/imgui/imstb_textedit.h
--    thirdparty/imgui/imstb_truetype.h
--    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
--)
-+if(NOT USE_SYSTEM_IMGUI)
-+    install(FILES
-+        thirdparty/imgui/imgui.h
-+        thirdparty/imgui/imconfig.h
-+        thirdparty/imgui/imgui_internal.h
-+        thirdparty/imgui/imstb_rectpack.h
-+        thirdparty/imgui/imstb_textedit.h
-+        thirdparty/imgui/imstb_truetype.h
-+        DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-+    )
-+endif()
- 
- # Install SPIRV-Tools headers (only the public API, not opt/linker)
- if(REXGLUE_USE_VULKAN)
---- include/rex/chrono/chrono.h.orig	2026-08-21 22:10:13 UTC
+--- include/rex/chrono/chrono.h.orig
 +++ include/rex/chrono/chrono.h
-@@ -116,7 +116,7 @@ namespace std::chrono {
+@@ -116,7 +116,7 @@ using XSystemClock = detail::NtSystemClock<detail::Domain::Guest>;
  
  namespace std::chrono {
  
@@ -88,7 +50,8 @@
  // Apple libc++ does not expose clock_time_conversion or clock_cast.
  template <class, class>
  struct clock_time_conversion {};
---- include/rex/platform.h.orig	2026-08-21 22:10:13 UTC
+
+--- include/rex/platform.h.orig
 +++ include/rex/platform.h
 @@ -35,7 +35,7 @@
  #elif defined(__ANDROID__)
@@ -99,54 +62,8 @@
  #define REX_PLATFORM_GNU_LINUX 1
  #define REX_PLATFORM_LINUX 1
  #else
---- src/audio/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ src/audio/CMakeLists.txt
-@@ -35,6 +35,10 @@ target_include_directories(rexaudio PUBLIC
-     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
- )
- 
-+if(USE_SYSTEM_SDL)
-+    find_package(SDL3 REQUIRED)
-+endif()
-+
- target_link_libraries(rexaudio
-     PUBLIC rexcore SDL3::SDL3
-     PRIVATE libavcodec libavutil
---- src/codegen/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ src/codegen/CMakeLists.txt
-@@ -103,6 +103,14 @@ target_include_directories(rexcodegen
-         ${CMAKE_CURRENT_BINARY_DIR}/generated/templates
- )
- 
-+if(USE_SYSTEM_FMT)
-+    find_package(fmt REQUIRED)
-+endif()
-+
-+if(USE_SYSTEM_SPDLOG)
-+    find_package(spdlog REQUIRED)
-+endif()
-+
- target_link_libraries(rexcodegen
-     PUBLIC
-         rexruntime
---- src/core/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ src/core/CMakeLists.txt
-@@ -104,6 +104,14 @@ endif()
-     target_link_libraries(rexcore PRIVATE pthread rt dl)
- endif()
- 
-+if(USE_SYSTEM_FMT)
-+    find_package(fmt REQUIRED)
-+endif()
-+
-+if(USE_SYSTEM_SPDLOG)
-+    find_package(spdlog REQUIRED)
-+endif()
-+
- target_link_libraries(rexcore
-     PUBLIC
-         fmt::fmt
---- src/core/clock_posix.cpp.orig	2026-08-21 22:10:13 UTC
+
+--- src/core/clock_posix.cpp.orig
 +++ src/core/clock_posix.cpp
 @@ -27,7 +27,11 @@ uint64_t Clock::host_tick_frequency_platform() {
    return (uint64_t)((1000000000ull * (uint64_t)info.denom) / (uint64_t)info.numer);
@@ -172,7 +89,8 @@
    assert_zero(error);
  
    return tp.tv_nsec + tp.tv_sec * 1000000000ull;
---- src/core/exception_handler_posix.cpp.orig	2026-08-21 22:10:13 UTC
+
+--- src/core/exception_handler_posix.cpp.orig
 +++ src/core/exception_handler_posix.cpp
 @@ -17,7 +17,7 @@
  
@@ -183,7 +101,7 @@
  
  #include <signal.h>
  
-@@ -85,6 +85,29 @@ static void ExceptionHandlerCallback(int signal_number
+@@ -85,6 +85,29 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
    thread_context.r15 = uint64_t(mcontext->__ss.__r15);
    std::memcpy(thread_context.xmm_registers, &mcontext->__fs.__fpu_xmm0,
                sizeof(thread_context.xmm_registers));
@@ -209,22 +127,22 @@
 +#include <machine/fpu.h>
 +  const struct savefpu* fpu_state = reinterpret_cast<const struct savefpu*>(mcontext.mc_fpstate);
 +  std::memcpy(thread_context.xmm_registers, fpu_state->sv_xmm,
-+  	      sizeof(thread_context.xmm_registers));
++              sizeof(thread_context.xmm_registers));
  #else
    thread_context.rip = uint64_t(mcontext.gregs[REG_RIP]);
    thread_context.eflags = uint32_t(mcontext.gregs[REG_EFL]);
-@@ -187,6 +210,10 @@ static void ExceptionHandlerCallback(int signal_number
+@@ -187,6 +210,10 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
        access_violation_operation = (uint64_t(mcontext->__es.__err) & kX86PageFaultErrorCodeWrite)
                                         ? Exception::AccessViolationOperation::kWrite
                                         : Exception::AccessViolationOperation::kRead;
 +#elif defined(__FreeBSD__)
 +      access_violation_operation = (uint64_t(mcontext.mc_err) & kX86PageFaultErrorCodeWrite)
-+				       ? Exception::AccessViolationOperation::kWrite
-+				       : Exception::AccessViolationOperation::kRead;
++                                       ? Exception::AccessViolationOperation::kWrite
++                                       : Exception::AccessViolationOperation::kRead;
  #else
        access_violation_operation = (uint64_t(mcontext.gregs[REG_ERR]) & kX86PageFaultErrorCodeWrite)
                                         ? Exception::AccessViolationOperation::kWrite
-@@ -331,6 +358,31 @@ static void ExceptionHandlerCallback(int signal_number
+@@ -331,6 +358,31 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
                          modified_register_index * sizeof(vec128_t),
                      &thread_context.xmm_registers[modified_register_index], sizeof(vec128_t));
        }
@@ -234,29 +152,30 @@
 +      uint32_t modified_register_index;
 +      // The order must match the order in X64Register.
 +      static const size_t kIntRegisterMap[] = {
-+	offsetof(__mcontext, mc_rax), offsetof(__mcontext, mc_rcx), offsetof(__mcontext, mc_rdx), offsetof(__mcontext, mc_rbx),
-+	offsetof(__mcontext, mc_rsp), offsetof(__mcontext, mc_rbp), offsetof(__mcontext, mc_rsi), offsetof(__mcontext, mc_rdi),
-+	offsetof(__mcontext, mc_r8), offsetof(__mcontext, mc_r9), offsetof(__mcontext, mc_r10), offsetof(__mcontext, mc_r11),
-+	offsetof(__mcontext, mc_r12), offsetof(__mcontext, mc_r13), offsetof(__mcontext, mc_r14), offsetof(__mcontext, mc_r15),
++          offsetof(__mcontext, mc_rax), offsetof(__mcontext, mc_rcx), offsetof(__mcontext, mc_rdx), offsetof(__mcontext, mc_rbx),
++          offsetof(__mcontext, mc_rsp), offsetof(__mcontext, mc_rbp), offsetof(__mcontext, mc_rsi), offsetof(__mcontext, mc_rdi),
++          offsetof(__mcontext, mc_r8), offsetof(__mcontext, mc_r9), offsetof(__mcontext, mc_r10), offsetof(__mcontext, mc_r11),
++          offsetof(__mcontext, mc_r12), offsetof(__mcontext, mc_r13), offsetof(__mcontext, mc_r14), offsetof(__mcontext, mc_r15),
 +      };
-+uint16_t modified_int_registers_remaining = ex.modified_int_registers();
-+while (rex::bit_scan_forward(modified_int_registers_remaining, &modified_register_index)) {
-+  modified_int_registers_remaining &= ~(UINT16_C(1) << modified_register_index);
-+  size_t offset = kIntRegisterMap[modified_register_index];
-+  *reinterpret_cast<uint64_t*>(reinterpret_cast<char*>(&mcontext) + offset) =
-+	thread_context.int_registers[modified_register_index];
-+}
-+uint16_t modified_xmm_registers_remaining = ex.modified_xmm_registers();
-+while (rex::bit_scan_forward(modified_xmm_registers_remaining, &modified_register_index)) {
-+  modified_xmm_registers_remaining &= ~(UINT16_C(1) << modified_register_index);
-+  struct savefpu* fpu_state = reinterpret_cast<struct savefpu*>(mcontext.mc_fpstate);
-+  std::memcpy(&fpu_state->sv_xmm[modified_register_index],
-+	      &thread_context.xmm_registers[modified_register_index], sizeof(vec128_t));
-+}
++      uint16_t modified_int_registers_remaining = ex.modified_int_registers();
++      while (rex::bit_scan_forward(modified_int_registers_remaining, &modified_register_index)) {
++        modified_int_registers_remaining &= ~(UINT16_C(1) << modified_register_index);
++        size_t offset = kIntRegisterMap[modified_register_index];
++        *reinterpret_cast<uint64_t*>(reinterpret_cast<char*>(&mcontext) + offset) =
++            thread_context.int_registers[modified_register_index];
++      }
++      uint16_t modified_xmm_registers_remaining = ex.modified_xmm_registers();
++      while (rex::bit_scan_forward(modified_xmm_registers_remaining, &modified_register_index)) {
++        modified_xmm_registers_remaining &= ~(UINT16_C(1) << modified_register_index);
++        struct savefpu* fpu_state = reinterpret_cast<struct savefpu*>(mcontext.mc_fpstate);
++        std::memcpy(&fpu_state->sv_xmm[modified_register_index],
++                    &thread_context.xmm_registers[modified_register_index], sizeof(vec128_t));
++      }
  #else
        mcontext.gregs[REG_RIP] = greg_t(thread_context.rip);
        mcontext.gregs[REG_EFL] = greg_t(thread_context.eflags);
---- src/core/filesystem_posix.cpp.orig	2026-08-21 22:10:13 UTC
+
+--- src/core/filesystem_posix.cpp.orig
 +++ src/core/filesystem_posix.cpp
 @@ -37,7 +37,7 @@
  
@@ -267,7 +186,8 @@
  using rex_off64_t = off_t;
  #define rex_fseeko64 fseeko
  #define rex_ftello64 ftello
---- src/core/mapped_memory_posix.cpp.orig	2026-08-21 22:10:13 UTC
+
+--- src/core/mapped_memory_posix.cpp.orig
 +++ src/core/mapped_memory_posix.cpp
 @@ -23,7 +23,7 @@
  // macOS off_t is 64-bit and provides no *64 large-file variants; the base
@@ -278,7 +198,8 @@
  using rex_stat64_t = struct stat;
  using rex_off64_t = off_t;
  #define rex_fstat64 fstat
---- src/core/memory_posix.cpp.orig	2026-08-21 22:10:13 UTC
+
+--- src/core/memory_posix.cpp.orig
 +++ src/core/memory_posix.cpp
 @@ -37,7 +37,7 @@
  
@@ -289,9 +210,10 @@
  #define rex_mmap64 mmap
  #define rex_ftruncate64 ftruncate
  #else
---- src/core/threading_posix.cpp.orig	2026-08-21 22:10:13 UTC
+
+--- src/core/threading_posix.cpp.orig
 +++ src/core/threading_posix.cpp
-@@ -25,7 +25,7 @@ static_assert(REX_PLATFORM_LINUX || REX_PLATFORM_MAC, 
+@@ -25,7 +25,7 @@ static_assert(REX_PLATFORM_LINUX || REX_PLATFORM_MAC, "This file is POSIX-only")
  #include <pthread.h>
  #include <semaphore.h>
  
@@ -300,7 +222,7 @@
  #include <cstdio>
  
  #include <fcntl.h>
-@@ -62,6 +62,10 @@ static_assert(REX_PLATFORM_LINUX || REX_PLATFORM_MAC, 
+@@ -62,6 +62,10 @@ static_assert(REX_PLATFORM_LINUX || REX_PLATFORM_MAC, "This file is POSIX-only")
  #define REX_HAS_SIGEV_THREAD_ID 0
  #endif
  
@@ -311,7 +233,7 @@
  namespace rex::thread {
  
  #if REX_PLATFORM_ANDROID
-@@ -178,6 +182,8 @@ uint32_t current_thread_system_id() {
+@@ -178,6 +182,8 @@ void EnableAffinityConfiguration() {}
  uint32_t current_thread_system_id() {
  #if defined(__APPLE__)
    return static_cast<uint32_t>(pthread_mach_thread_np(pthread_self()));
@@ -320,7 +242,7 @@
  #else
    return static_cast<uint32_t>(syscall(SYS_gettid));
  #endif
-@@ -758,6 +764,8 @@ class PosixCondition<Thread> : public PosixConditionBa
+@@ -758,6 +764,8 @@ class PosixCondition<Thread> : public PosixConditionBase {
  
  #if defined(__APPLE__)
    uint32_t system_id() const { return static_cast<uint32_t>(pthread_mach_thread_np(thread_)); }
@@ -329,318 +251,61 @@
  #else
    uint32_t system_id() const { return static_cast<uint32_t>(thread_); }
  #endif
-@@ -1053,13 +1061,11 @@ class PosixWaitHandle {
+@@ -1053,13 +1061,23 @@ class PosixCondition<Thread> : public PosixConditionBase {
  
  class PosixWaitHandle {
   public:
--  virtual ~PosixWaitHandle();
++#if defined(__FreeBSD__)
 +  virtual ~PosixWaitHandle() = default;
++#else
+   virtual ~PosixWaitHandle();
++#endif
    virtual PosixConditionBase& condition() = 0;
  };
  
--PosixWaitHandle::~PosixWaitHandle() = default;
--
--thread_local PosixCondition<Thread>* current_thread_condition_ = nullptr;
++#ifndef __FreeBSD__
+ PosixWaitHandle::~PosixWaitHandle() = default;
++#endif
+ 
++#if defined(__FreeBSD__)
 +thread_local ::rex::thread::PosixCondition<Thread>* current_thread_condition_ = nullptr;
++#else
+ thread_local PosixCondition<Thread>* current_thread_condition_ = nullptr;
++#endif
  
  bool DispatchCurrentThreadUserCallback() {
    if (!current_thread_condition_) {
---- src/input/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ src/input/CMakeLists.txt
-@@ -35,4 +35,8 @@ endif()
-     target_sources(rexinput PRIVATE sdl/sdl_input_driver.cpp)
+
+--- src/graphics/CMakeLists.txt.orig
++++ src/graphics/CMakeLists.txt
+@@ -85,6 +85,11 @@ if(REXGLUE_USE_D3D12)
+     )
  endif()
  
-+if(USE_SYSTEM_SDL)
-+    find_package(SDL3 REQUIRED)
-+endif()
-+
- target_link_libraries(rexinput PUBLIC rexcore rexui SDL3::SDL3)
---- src/system/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ src/system/CMakeLists.txt
-@@ -77,6 +77,18 @@ target_include_directories(rexruntime PRIVATE
-     ${REXGLUE_ROOT}/thirdparty
- )
- 
-+if(USE_SYSTEM_FMT)
-+    find_package(fmt REQUIRED)
-+endif()
-+
-+if(USE_SYSTEM_SPDLOG)
-+    find_package(spdlog REQUIRED)
-+endif()
-+
-+if(USE_SYSTEM_SDL)
-+    find_package(SDL3 REQUIRED)
-+endif()
-+
- target_link_libraries(rexruntime
-     PUBLIC
-         simde
-@@ -89,6 +101,10 @@ target_link_libraries(rexruntime
-         mspack
-         xxHash::xxhash
- )
-+
++# Additional includes path for FreeBSD
 +if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
-+    target_link_directories(rexruntime PRIVATE /usr/local/lib)
-+endif()
- 
- if(REXGLUE_ENABLE_TRACY)
-     # TARGET_NAME is what tells install(EXPORT) this text is a target to
---- src/ui/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ src/ui/CMakeLists.txt
-@@ -108,6 +108,13 @@ target_include_directories(rexui PRIVATE
-     ${REXGLUE_ROOT}/thirdparty/stb  # stb_image.h for icon decoding
- )
- 
-+if(USE_SYSTEM_IMGUI)
-+    find_package(imgui REQUIRED)
-+    if(NOT TARGET imgui::imgui)
-+        add_library(imgui::imgui ALIAS imgui)
-+    endif()
-+endif()
-+
- target_link_libraries(rexui PUBLIC
-     rexcore
-     renderdoc
---- thirdparty/CMakeLists.txt.orig	2026-08-21 22:10:13 UTC
-+++ thirdparty/CMakeLists.txt
-@@ -37,13 +37,24 @@ set(REQUIRED_SUBMODULES
-     tomlplusplus
-     simde
-     xxHash
--    spdlog
--    fmt
-     utfcpp
--    imgui
--    sdl3
- )
-+if(NOT USE_SYSTEM_FMT)
-+    list(APPEND REQUIRED_SUBMODULES fmt)
-+endif()
- 
-+if(NOT USE_SYSTEM_IMGUI)
-+    list(APPEND REQUIRED_SUBMODULES imgui)
-+endif()
-+
-+if(NOT USE_SYSTEM_SDL)
-+    list(APPEND REQUIRED_SUBMODULES sdl3)
-+endif()
-+
-+if(NOT USE_SYSTEM_SPDLOG)
-+    list(APPEND REQUIRED_SUBMODULES spdlog)
++    include_directories(SYSTEM /usr/local/include)
 +endif()
 +
  if(REXGLUE_USE_VULKAN)
-     list(APPEND REQUIRED_SUBMODULES
-         vulkan-headers vulkan-memory-allocator
-@@ -63,16 +74,6 @@ endif()
-     list(APPEND REQUIRED_SUBMODULES catch2)
+     list(APPEND REXGPU_XENOS_SOURCES ${REXGPU_XENOS_SPIRV_SOURCES} ${REXGPU_XENOS_VULKAN_SOURCES})
  endif()
+
+--- src/system/CMakeLists.txt.orig
++++ src/system/CMakeLists.txt
+@@ -90,6 +90,10 @@ target_link_libraries(rexruntime
+         xxHash::xxhash
+ )
  
--foreach(submodule ${REQUIRED_SUBMODULES})
--    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${submodule}/.git")
--        message(FATAL_ERROR
--            "Git submodule '${submodule}' is not initialized.\n"
--            "Please run: git submodule update --init --recursive\n"
--            "from the repository root directory."
--        )
--    endif()
--endforeach()
--
- #=============================================================================
- # Header-only libraries (vendored, not in vcpkg)
- #=============================================================================
-@@ -163,22 +164,26 @@ target_compile_options(disasm PRIVATE -w)
- #=============================================================================
- # fmt - Formatting library (must come before spdlog)
- #=============================================================================
--set(FMT_DOC OFF CACHE BOOL "" FORCE)
--set(FMT_TEST OFF CACHE BOOL "" FORCE)
--set(FMT_INSTALL ON CACHE BOOL "" FORCE)
--add_subdirectory(fmt)
--target_compile_options(fmt PRIVATE -w)
-+if(NOT USE_SYSTEM_FMT)
-+    set(FMT_DOC OFF CACHE BOOL "" FORCE)
-+    set(FMT_TEST OFF CACHE BOOL "" FORCE)
-+    set(FMT_INSTALL ON CACHE BOOL "" FORCE)
-+    add_subdirectory(fmt)
-+    target_compile_options(fmt PRIVATE -w)
++if(CMAKE_SYSTEM_NAME STREQUAL "FreeBSD")
++    target_link_directories(rexruntime PRIVATE /usr/local/lib)
 +endif()
- 
- #=============================================================================
- # spdlog - Logging library
- #=============================================================================
--set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE)
--set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
--set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "" FORCE)
--set(SPDLOG_BUILD_BENCH OFF CACHE BOOL "" FORCE)
--set(SPDLOG_INSTALL ON CACHE BOOL "" FORCE)
--add_subdirectory(spdlog)
--target_compile_options(spdlog PRIVATE -w)
-+if(NOT USE_SYSTEM_SPDLOG)
-+    set(SPDLOG_FMT_EXTERNAL ON CACHE BOOL "" FORCE)
-+    set(SPDLOG_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
-+    set(SPDLOG_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-+    set(SPDLOG_BUILD_BENCH OFF CACHE BOOL "" FORCE)
-+    set(SPDLOG_INSTALL ON CACHE BOOL "" FORCE)
-+    add_subdirectory(spdlog)
-+    target_compile_options(spdlog PRIVATE -w)
-+endif()
- 
- #=============================================================================
- # utfcpp - UTF-8 string library (header-only)
-@@ -227,81 +232,85 @@ include(${PROJECT_SOURCE_DIR}/cmake/rexglue_fidelityfx
- #=============================================================================
- # imgui - Immediate mode GUI (no CMakeLists.txt, manual target)
- #=============================================================================
--set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
--add_library(imgui OBJECT
--    ${IMGUI_DIR}/imgui.cpp
--    ${IMGUI_DIR}/imgui_demo.cpp
--    ${IMGUI_DIR}/imgui_draw.cpp
--    ${IMGUI_DIR}/imgui_tables.cpp
--    ${IMGUI_DIR}/imgui_widgets.cpp
--)
--add_library(imgui::imgui ALIAS imgui)
--target_include_directories(imgui PUBLIC
--    $<BUILD_INTERFACE:${IMGUI_DIR}>
--    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
--target_compile_options(imgui PRIVATE -w)
-+if(NOT USE_SYSTEM_IMGUI)
-+    set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/imgui")
-+    add_library(imgui OBJECT
-+        ${IMGUI_DIR}/imgui.cpp
-+        ${IMGUI_DIR}/imgui_demo.cpp
-+        ${IMGUI_DIR}/imgui_draw.cpp
-+        ${IMGUI_DIR}/imgui_tables.cpp
-+        ${IMGUI_DIR}/imgui_widgets.cpp
-+    )
-+    add_library(imgui::imgui ALIAS imgui)
-+    target_include_directories(imgui PUBLIC
-+        $<BUILD_INTERFACE:${IMGUI_DIR}>
-+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>)
-+    target_compile_options(imgui PRIVATE -w)
-+endif()
- 
- #=============================================================================
- # SDL3 - Cross-platform media layer
- #=============================================================================
--set(SDL_INSTALL ON CACHE BOOL "" FORCE)
--set(SDL_SHARED OFF CACHE BOOL "" FORCE)
--set(SDL_STATIC ON CACHE BOOL "" FORCE)
--set(SDL_TEST OFF CACHE BOOL "" FORCE)
--set(SDL_UNIX_CONSOLE_BUILD ON CACHE BOOL "" FORCE)
-+if(NOT USE_SYSTEM_SDL)
-+    set(SDL_INSTALL ON CACHE BOOL "" FORCE)
-+    set(SDL_SHARED OFF CACHE BOOL "" FORCE)
-+    set(SDL_STATIC ON CACHE BOOL "" FORCE)
-+    set(SDL_TEST OFF CACHE BOOL "" FORCE)
-+    set(SDL_UNIX_CONSOLE_BUILD ON CACHE BOOL "" FORCE)
- 
--# Video provides the windowing/event layer; presenters create their own
--# D3D12/Vulkan surfaces from native handles, so SDL_RENDER stays off.
--set(SDL_VIDEO ON CACHE BOOL "" FORCE)
--if(APPLE)
--    # macOS uses SDL for windowing + Metal/Vulkan surface creation.
--    set(SDL_METAL ON CACHE BOOL "" FORCE)
--    set(SDL_VULKAN ON CACHE BOOL "" FORCE)
--else()
--    set(SDL_METAL OFF CACHE BOOL "" FORCE)
--    # Linux picks X11 or Wayland at runtime, so the surface has to come from
--    # whichever driver SDL chose. Windows presenters go straight from the HWND.
--    if(UNIX)
-+    # Video provides the windowing/event layer; presenters create their own
-+    # D3D12/Vulkan surfaces from native handles, so SDL_RENDER stays off.
-+    set(SDL_VIDEO ON CACHE BOOL "" FORCE)
-+    if(APPLE)
-+        # macOS uses SDL for windowing + Metal/Vulkan surface creation.
-+        set(SDL_METAL ON CACHE BOOL "" FORCE)
-         set(SDL_VULKAN ON CACHE BOOL "" FORCE)
-     else()
--        set(SDL_VULKAN OFF CACHE BOOL "" FORCE)
-+        set(SDL_METAL OFF CACHE BOOL "" FORCE)
-+        # Linux picks X11 or Wayland at runtime, so the surface has to come from
-+        # whichever driver SDL chose. Windows presenters go straight from the HWND.
-+        if(UNIX)
-+            set(SDL_VULKAN ON CACHE BOOL "" FORCE)
-+        else()
-+            set(SDL_VULKAN OFF CACHE BOOL "" FORCE)
-+        endif()
-     endif()
--endif()
--set(SDL_RENDER OFF CACHE BOOL "" FORCE)
--set(SDL_HAPTIC OFF CACHE BOOL "" FORCE)
--set(SDL_SENSOR OFF CACHE BOOL "" FORCE)
--set(SDL_POWER OFF CACHE BOOL "" FORCE)
--set(SDL_FILESYSTEM OFF CACHE BOOL "" FORCE)
--set(SDL_LOCALE ON CACHE BOOL "" FORCE)
--set(SDL_FILE OFF CACHE BOOL "" FORCE)
--set(SDL_MISC OFF CACHE BOOL "" FORCE)
--set(SDL_DIALOG ON CACHE BOOL "" FORCE)
--set(SDL_TRAY OFF CACHE BOOL "" FORCE)
--set(SDL_CAMERA OFF CACHE BOOL "" FORCE)
-+    set(SDL_RENDER OFF CACHE BOOL "" FORCE)
-+    set(SDL_HAPTIC OFF CACHE BOOL "" FORCE)
-+    set(SDL_SENSOR OFF CACHE BOOL "" FORCE)
-+    set(SDL_POWER OFF CACHE BOOL "" FORCE)
-+    set(SDL_FILESYSTEM OFF CACHE BOOL "" FORCE)
-+    set(SDL_LOCALE ON CACHE BOOL "" FORCE)
-+    set(SDL_FILE OFF CACHE BOOL "" FORCE)
-+    set(SDL_MISC OFF CACHE BOOL "" FORCE)
-+    set(SDL_DIALOG ON CACHE BOOL "" FORCE)
-+    set(SDL_TRAY OFF CACHE BOOL "" FORCE)
-+    set(SDL_CAMERA OFF CACHE BOOL "" FORCE)
- 
--# Disable graphics APIs (unused without video) — only on non-Apple
--set(SDL_OPENGL OFF CACHE BOOL "" FORCE)
--set(SDL_OPENGLES OFF CACHE BOOL "" FORCE)
-+    # Disable graphics APIs (unused without video) — only on non-Apple
-+    set(SDL_OPENGL OFF CACHE BOOL "" FORCE)
-+    set(SDL_OPENGLES OFF CACHE BOOL "" FORCE)
- 
--# Disable dummy drivers
--set(SDL_DISKAUDIO OFF CACHE BOOL "" FORCE)
--set(SDL_DUMMYAUDIO OFF CACHE BOOL "" FORCE)
--set(SDL_DUMMYVIDEO OFF CACHE BOOL "" FORCE)
-+    # Disable dummy drivers
-+    set(SDL_DISKAUDIO OFF CACHE BOOL "" FORCE)
-+    set(SDL_DUMMYAUDIO OFF CACHE BOOL "" FORCE)
-+    set(SDL_DUMMYVIDEO OFF CACHE BOOL "" FORCE)
- 
--# Linux video and audio backends. Both video drivers are always built so the
--# one in use stays a runtime choice.
--if(UNIX AND NOT APPLE)
--    set(SDL_X11               ON  CACHE BOOL "" FORCE)
--    set(SDL_WAYLAND           ON  CACHE BOOL "" FORCE)
--    set(SDL_ALSA              ON  CACHE BOOL "" FORCE)
--    set(SDL_ALSA_SHARED       ON  CACHE BOOL "" FORCE)
--    set(SDL_PULSEAUDIO        ON  CACHE BOOL "" FORCE)
--    set(SDL_PULSEAUDIO_SHARED ON  CACHE BOOL "" FORCE)
--    set(SDL_PIPEWIRE          ON  CACHE BOOL "" FORCE)
--    set(SDL_PIPEWIRE_SHARED   ON  CACHE BOOL "" FORCE)
--endif()
-+    # Linux video and audio backends. Both video drivers are always built so the
-+    # one in use stays a runtime choice.
-+    if(UNIX AND NOT APPLE)
-+        set(SDL_X11               ON  CACHE BOOL "" FORCE)
-+        set(SDL_WAYLAND           ON  CACHE BOOL "" FORCE)
-+        set(SDL_ALSA              ON  CACHE BOOL "" FORCE)
-+        set(SDL_ALSA_SHARED       ON  CACHE BOOL "" FORCE)
-+        set(SDL_PULSEAUDIO        ON  CACHE BOOL "" FORCE)
-+        set(SDL_PULSEAUDIO_SHARED ON  CACHE BOOL "" FORCE)
-+        set(SDL_PIPEWIRE          ON  CACHE BOOL "" FORCE)
-+        set(SDL_PIPEWIRE_SHARED   ON  CACHE BOOL "" FORCE)
-+    endif()
- 
--add_subdirectory(sdl3)
-+    add_subdirectory(sdl3)
-+endif()
- 
- #=============================================================================
- # DXC API headers (vendored from DirectXShaderCompiler, runtime-loaded)
---- thirdparty/renderdoc/renderdoc_app.h.orig	2026-08-21 22:10:13 UTC
++
+ if(REXGLUE_ENABLE_TRACY)
+     # TARGET_NAME is what tells install(EXPORT) this text is a target to
+     # namespace. Without it the plain name survives into the installed config
+
+--- thirdparty/renderdoc/renderdoc_app.h.orig
 +++ thirdparty/renderdoc/renderdoc_app.h
 @@ -30,7 +30,7 @@
  
