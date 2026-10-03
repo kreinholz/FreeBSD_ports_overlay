@@ -13,6 +13,7 @@ LICENSE_COMB=	multi
 LICENSE_FILE_GPLv2+ =	${WRKSRC}/license.txt
 LICENSE_FILE_ISCL=	${WRKSRC}/externals/cubeb/LICENSE
 
+ONLY_FOR_ARCHS=	amd64 aarch64
 BROKEN_aarch64=	build fails on aarch64 with system boost-libs
 
 BUILD_DEPENDS=	nlohmann-json>0:devel/nlohmann-json \
@@ -97,7 +98,7 @@ CMAKE_ON+=		ENABLE_LIBRETRO \
 post-patch:
 	@${REINPLACE_CMD} -e 's/@GIT_BRANCH@/master/' \
 		-e 's/@GIT_DESC@/${GH_TAGNAME}/' \
-		-e 's/@BUILD_FULLNAME@/${PORTVERSION}/' \
+		-e 's/@BUILD_FULLNAME@/${DISTVERSION}/' \
 		${WRKSRC}/src/common/scm_rev.cpp.in
 
 .if defined(AZAHAR_SLAVE)

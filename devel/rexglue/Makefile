@@ -21,17 +21,11 @@ BUILD_DEPENDS=	wayland-protocols>0:graphics/wayland-protocols \
 # Note: in poudriere, unlike live system, USE_XORG fails with
 # bundled SDL3 submodule, so we must list xorg components here
 LIB_DEPENDS=	libwayland-client.so:graphics/wayland \
-		libvulkan.so:graphics/vulkan-loader \
-		libX11.so:x11/libX11 \
-		libXcursor.so:x11/libXcursor \
-		libXext.so:x11/libXext \
-		libXi.so:x11/xinput \
-		libXfixes.so:x11/libXfixes \
-		libXrandr.so:x11/libXrandr \
-		libXss.so:x11/libXScrnSaver \
-		libXtst.so:x11/libXtst
+		libvulkan.so:graphics/vulkan-loader
 
 USES=		cmake compiler:c++23-lang pkgconfig xorg
+
+USE_XORG=	x11 xcursor xext xfixes xi xrandr xscrnsaver xtst
 
 # To do - currently, pkg-plist is hardcoded to a Release build. This will need to be fixed
 OPTIONS_SINGLE=		CMAKE_BUILD
@@ -62,8 +56,6 @@ CXXFLAGS+=	-march=x86-64-v2
 .if ${OSVERSION} < 1501000
 IGNORE=	requires FreeBSD 15.1 or later due to libc++ shortcomings
 .endif
-
-USE_XORG=	x11
 
 USE_GITHUB=	yes
 GH_ACCOUNT=	rexglue

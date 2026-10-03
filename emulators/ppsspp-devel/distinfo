@@ -1,6 +1,6 @@
-TIMESTAMP = 1790297837
-SHA256 (hrydgard-ppsspp-1.20.4.2028.ga50fb60-a50fb60_GH0.tar.gz) = 21d41dc319173e2317478b0843e721b3477a19c11abc11a342d25cd0ec6de2f0
-SIZE (hrydgard-ppsspp-1.20.4.2028.ga50fb60-a50fb60_GH0.tar.gz) = 37450632
+TIMESTAMP = 1790911956
+SHA256 (hrydgard-ppsspp-1.20.4.2320.ga2f4ce2-a2f4ce2_GH0.tar.gz) = aeb4101f8d67cc5d93afe29c7d0a597a2137477204e320aa0756038e97f0ea71
+SIZE (hrydgard-ppsspp-1.20.4.2320.ga2f4ce2-a2f4ce2_GH0.tar.gz) = 37513733
 SHA256 (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = da3c61d2d47df12536a7977443387c1c3d7a750fe8c916c943860788b590db7e
 SIZE (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = 769418
 SHA256 (hrydgard-ppsspp-ffmpeg-b87f7c6d522d1edba77cfc4fac96ce48a236f806_GH0.tar.gz) = cb3a92c412b754886b469bd0d937e8edcdabc87f7a09614720223e6856e76bcc
