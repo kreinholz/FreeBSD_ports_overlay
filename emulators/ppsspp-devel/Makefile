@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.2320.ga2f4ce2
+PORTVERSION=	1.20.4.2454.g3c6c7f5
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -33,7 +33,7 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	a2f4ce2
+GH_TAGNAME=	3c6c7f5
 GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
 		hrydgard:ppsspp-ffmpeg:b87f7c6d522d1edba77cfc4fac96ce48a236f806:ppssppffmpeg/ffmpeg \
 		Kingcom:armips:v0.11.0-219-g62adab4:armips/ext/armips \
@@ -41,7 +41,7 @@ GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:lib
 		KhronosGroup:SPIRV-Cross:4212eef67ed0ca048cb726a6767185504e7695e5:SPIRVCross/ext/SPIRV-Cross \
 		unknownbrackets:ppsspp-debugger:9776332f720c854ef26f325a0cf9e32c02115a9c:ppssppdebugger/assets/debugger \
 		google:cpu_features:v0.4.1-211-gfd4ffc1:cpu_features/ext/cpu_features \
-		RetroAchievements:rcheevos:v12.3.0-18-g2ac45d3:rcheevos/ext/rcheevos \
+		RetroAchievements:rcheevos:v12.4.0-16-g1433173:rcheevos/ext/rcheevos \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
 		Kethen:aemu_postoffice:9e533637b9a13bb0194c75cf43b0bf6d25d8101a:aemu_postoffice/ext/aemu_postoffice \

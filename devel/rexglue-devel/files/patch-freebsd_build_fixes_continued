@@ -1,0 +1,455 @@
+--- CMakeLists.txt.orig
++++ CMakeLists.txt
+@@ -110,6 +110,8 @@ set(CMAKE_RELWITHDEBINFO_POSTFIX rd)
+ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+     # Tracy requires base system libexecinfo
+     add_link_options("-lexecinfo")
++    # libutil is needed for some FreeBSD-specific code in memory_posix.cpp
++    add_link_options("-lutil")
+ endif()
+ 
+ # CMAKE_<CONFIG>_POSTFIX seeds libraries only, so without this every config of an
+
+--- src/core/exception_handler_posix.cpp.orig
++++ src/core/exception_handler_posix.cpp
+@@ -31,12 +31,16 @@
+ 
+ #include <ucontext.h>
+ 
++#ifdef __FreeBSD__
++#include <machine/fpu.h>
++#endif
++
+ namespace rex::arch {
+ 
+ bool signal_handlers_installed_ = false;
+ struct sigaction original_sigill_handler_;
+ struct sigaction original_sigsegv_handler_;
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC || defined(__FreeBSD__)
+ struct sigaction original_sigbus_handler_;
+ #endif
+ 
+@@ -104,11 +108,10 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
+   thread_context.r13 = uint64_t(mcontext.mc_r13);
+   thread_context.r14 = uint64_t(mcontext.mc_r14);
+   thread_context.r15 = uint64_t(mcontext.mc_r15);
+-#include <machine/fpu.h>
+   const struct savefpu* fpu_state = reinterpret_cast<const struct savefpu*>(mcontext.mc_fpstate);
+   std::memcpy(thread_context.xmm_registers, fpu_state->sv_xmm,
+               sizeof(thread_context.xmm_registers));
+-#else
++#else // Linux
+   thread_context.rip = uint64_t(mcontext.gregs[REG_RIP]);
+   thread_context.eflags = uint32_t(mcontext.gregs[REG_EFL]);
+   // The REG_ order may be different than the register indices in the
+@@ -152,6 +155,17 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
+   thread_context.fpcr = mcontext->__ns.__fpcr;
+   static_assert(sizeof(thread_context.v) == sizeof(mcontext->__ns.__v));
+   std::memcpy(thread_context.v, mcontext->__ns.__v, sizeof(thread_context.v));
++#elif defined(__FreeBSD__)
++  std::memcpy(thread_context.x, mcontext.mc_gpregs.gp_x, sizeof(mcontext.mc_gpregs.gp_x));
++  thread_context.x[29] = mcontext.mc_gpregs.gp_x[29];
++  thread_context.x[30] = mcontext.mc_gpregs.gp_lr;
++  thread_context.sp    = mcontext.mc_gpregs.gp_sp;
++  thread_context.pc    = mcontext.mc_gpregs.gp_elr;
++  thread_context.pstate = mcontext.mc_gpregs.gp_spsr;
++  thread_context.fpsr = mcontext.mc_fpregs.fp_sr;
++  thread_context.fpcr = mcontext.mc_fpregs.fp_cr;
++  static_assert(sizeof(thread_context.v) == sizeof(mcontext.mc_fpregs.fp_q));
++  std::memcpy(thread_context.v, mcontext.mc_fpregs.fp_q, sizeof(thread_context.v));
+ #else
+   // Linux ARM64: mcontext_t is struct sigcontext (value, not pointer)
+   std::memcpy(thread_context.x, mcontext.regs, sizeof(thread_context.x));
+@@ -194,8 +208,8 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
+       // On macOS, SIGBUS (KERN_PROTECTION_FAILURE) is raised for writes to
+       // read-protected pages — the same scenario that raises SIGSEGV on Linux.
+       // Fall through to treat it as an access violation.
+-#if !REX_PLATFORM_MAC
+-      // On non-Mac POSIX, SIGBUS is a bus error (misaligned access), not a
++#if !REX_PLATFORM_MAC && !defined(__FreeBSD__)
++      // On Linux, SIGBUS is a bus error (misaligned access), not a
+       // protection fault — don't handle it here.
+       assert_unhandled_case(signal_number);
+       return;
+@@ -247,6 +261,34 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
+           }
+         }
+       }
++#elif defined(__FreeBSD__)
++      {
++        uint64_t freebsd_esr = 0;
++        
++        if (mcontext.mc_flags & _MC_ESR_VALID) {
++          freebsd_esr = mcontext.mc_esr;
++        }
++
++        if (((freebsd_esr >> 26) & 0b111110) == 0b100100) {
++          access_violation_operation = (freebsd_esr & (1U << 6))
++                                           ? Exception::AccessViolationOperation::kWrite
++                                           : Exception::AccessViolationOperation::kRead;
++        } else {
++          bool instruction_is_store;
++          if (IsArm64LoadPrefetchStore(*reinterpret_cast<const uint32_t*>(thread_context.pc),
++                                       instruction_is_store)) {
++            access_violation_operation = instruction_is_store
++                                             ? Exception::AccessViolationOperation::kWrite
++                                             : Exception::AccessViolationOperation::kRead;
++          } else {
++            assert_always(
++                "No ESR in the exception thread context, or it's not a Data "
++                "Abort, and the faulting instruction is not a known load, "
++                "prefetch or store instruction");
++            access_violation_operation = Exception::AccessViolationOperation::kUnknown;
++          }
++        }
++      }
+ #else
+       if (mcontext_esr && ((mcontext_esr->esr >> 26) & 0b111110) == 0b100100) {
+         access_violation_operation = (mcontext_esr->esr & (UINT64_C(1) << 6))
+@@ -445,6 +487,32 @@ static void ExceptionHandlerCallback(int signal_number, siginfo_t* signal_info,
+                       &thread_context.v[modified_register_index], sizeof(vec128_t));
+         }
+       }
++#elif defined(__FreeBSD__)
++      while (rex::bit_scan_forward(modified_x_registers_remaining, &modified_register_index)) {
++        modified_x_registers_remaining &= ~(UINT32_C(1) << modified_register_index);
++        if (modified_register_index < 29) {
++          mcontext.mc_gpregs.gp_x[modified_register_index] = thread_context.x[modified_register_index];
++        } else if (modified_register_index == 29) {
++          mcontext.mc_gpregs.gp_x[29] = thread_context.x[29];
++        } else {
++          mcontext.mc_gpregs.gp_lr = thread_context.x[30];
++        }
++      }
++      
++      mcontext.mc_gpregs.gp_sp   = thread_context.sp;
++      mcontext.mc_gpregs.gp_elr  = thread_context.pc;
++      mcontext.mc_gpregs.gp_spsr = thread_context.pstate;
++
++      mcontext.mc_fpregs.fp_sr   = thread_context.fpsr;
++      mcontext.mc_fpregs.fp_cr   = thread_context.fpcr;
++      {
++        uint32_t modified_v_registers_remaining = ex.modified_v_registers();
++        while (rex::bit_scan_forward(modified_v_registers_remaining, &modified_register_index)) {
++          modified_v_registers_remaining &= ~(UINT32_C(1) << modified_register_index);
++          std::memcpy(&mcontext.mc_fpregs.fp_q[modified_register_index],
++                      &thread_context.v[modified_register_index], sizeof(vec128_t));
++        }
++      }
+ #else
+       while (rex::bit_scan_forward(modified_x_registers_remaining, &modified_register_index)) {
+         modified_x_registers_remaining &= ~(UINT32_C(1) << modified_register_index);
+@@ -485,7 +553,7 @@ void ExceptionHandler::Install(Handler fn, void* data) {
+     if (sigaction(SIGSEGV, &signal_handler, &original_sigsegv_handler_) != 0) {
+       assert_always("Failed to install new SIGSEGV handler");
+     }
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC || defined(__FreeBSD__)
+     if (sigaction(SIGBUS, &signal_handler, &original_sigbus_handler_) != 0) {
+       assert_always("Failed to install new SIGBUS handler");
+     }
+@@ -530,7 +598,7 @@ void ExceptionHandler::Uninstall(Handler fn, void* data) {
+       if (sigaction(SIGSEGV, &original_sigsegv_handler_, NULL) != 0) {
+         assert_always("Failed to restore original SIGSEGV handler");
+       }
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC || defined(__FreeBSD__)
+       if (sigaction(SIGBUS, &original_sigbus_handler_, NULL) != 0) {
+         assert_always("Failed to restore original SIGBUS handler");
+       }
+
+--- src/core/filesystem_posix.cpp.orig
++++ src/core/filesystem_posix.cpp
+@@ -24,6 +24,11 @@
+ #include <mach-o/dyld.h>
+ #endif
+ 
++#ifdef __FreeBSD__
++#include <sys/types.h>
++#include <sys/sysctl.h>
++#endif
++
+ #include <rex/assert.h>
+ #include <rex/filesystem.h>
+ #include <rex/logging.h>
+@@ -91,7 +96,16 @@ std::filesystem::path GetExecutablePath() {
+   std::error_code ec;
+   std::filesystem::path canonical_path = std::filesystem::weakly_canonical(executable_path, ec);
+   return ec ? std::filesystem::path(executable_path) : canonical_path;
+-#else
++#elif defined(__FreeBSD__)
++  int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1};
++  char buf[1024];
++  size_t cb = sizeof(buf);
++  
++  if (sysctl(mib, 4, buf, &cb, nullptr, 0) == 0) {
++    return std::filesystem::path(buf);
++  }
++  return {};
++#else // Linux
+   char buff[FILENAME_MAX] = "";
+   readlink("/proc/self/exe", buff, FILENAME_MAX);
+   std::string s(buff);
+
+--- src/core/memory_posix.cpp.orig
++++ src/core/memory_posix.cpp
+@@ -29,6 +29,14 @@
+ #include <sys/stat.h>
+ #include <unistd.h>
+ 
++#if defined(__FreeBSD__)
++#include <sys/param.h>
++#include <sys/types.h>
++#include <sys/sysctl.h>
++#include <sys/user.h>
++#include <libutil.h>
++#endif
++
+ #include <rex/logging.h>
+ #include <rex/math.h>
+ #include <rex/memory/utils.h>
+@@ -73,7 +81,7 @@ static std::string MakeShmName(const std::filesystem::path& path) {
+   if (name.empty() || name[0] != '/') {
+     name.insert(name.begin(), '/');
+   }
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC || defined(__FreeBSD__)
+   if (name.size() > 30) {
+     const std::size_t h = std::hash<std::string>{}(name);
+     char hash_buf[24];
+@@ -137,7 +145,7 @@ uint32_t ToPosixProtectFlags(PageAccess access) {
+ }
+ 
+ bool IsWritableExecutableMemorySupported() {
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC || defined(__FreeBSD__)
+   // macOS enforces W^X on Apple Silicon. Shared file mappings cannot be both
+   // writable and executable. The code cache must use separate RW and RX views.
+   return false;
+@@ -147,7 +155,7 @@ bool IsWritableExecutableMemorySupported() {
+ }
+ 
+ // TODO(tomc): this needs to go somewhere else. we should utilize the platform namespace more.
+-#if REX_PLATFORM_LINUX
++#if REX_PLATFORM_LINUX && !defined(__FreeBSD__) // FreeBSD handles mmap more like Apple than Linux
+ namespace {
+ 
+ struct LinuxMapEntry {
+@@ -237,6 +245,21 @@ static PageAccess PermsToPageAccess(const char perms[5]) {
+ }  // namespace
+ #endif  // REX_PLATFORM_LINUX
+ 
++// FreeBSD version of the above
++#if defined(__FreeBSD__)
++static PageAccess FreeBSDPermsToPageAccess(int prot) {
++  const bool r = (prot & KVME_PROT_READ) != 0;
++  const bool w = (prot & KVME_PROT_WRITE) != 0;
++  const bool x = (prot & KVME_PROT_EXEC) != 0;
++
++  if (!r && !w && !x)
++    return PageAccess::kNoAccess;
++  if (x)
++    return w ? PageAccess::kExecuteReadWrite : PageAccess::kExecuteReadOnly;
++  return w ? PageAccess::kReadWrite : PageAccess::kReadOnly;
++}
++#endif // FreeBSD
++
+ void* AllocFixed(void* base_address, size_t length, AllocationType allocation_type,
+                  PageAccess access) {
+   // Emulates Windows VirtualAlloc behavior:
+@@ -262,7 +285,7 @@ void* AllocFixed(void* base_address, size_t length, AllocationType allocation_ty
+     // range uses mprotect to avoid clobbering the existing reservation. Do not
+     // widen sub-host-page requests here - higher-level guest heaps must reconcile
+     // all guest permissions sharing a host page first.
+-#if REX_PLATFORM_MAC
++#if REX_PLATFORM_MAC || defined(__FreeBSD__)
+   if (base_address != nullptr && allocation_type == AllocationType::kCommit) {
+     const size_t host_page = page_size();
+     const uintptr_t address = reinterpret_cast<uintptr_t>(base_address);
+@@ -288,6 +311,10 @@ void* AllocFixed(void* base_address, size_t length, AllocationType allocation_ty
+   if (base_address) {
+     flags |= MAP_FIXED_NOREPLACE;
+   }
++#elif defined(__FreeBSD__)
++  if (base_address) {
++    flags |= MAP_FIXED | MAP_EXCL; 
++  }
+ #else
+   if (base_address) {
+     flags |= MAP_FIXED;
+@@ -298,7 +325,7 @@ void* AllocFixed(void* base_address, size_t length, AllocationType allocation_ty
+   if (result != MAP_FAILED) {
+     return result;
+   }
+-#if defined(MAP_FIXED_NOREPLACE) && REX_PLATFORM_LINUX
++#if defined(MAP_FIXED_NOREPLACE) && REX_PLATFORM_LINUX && !defined(__FreeBSD__) // don't mmap Linux-style on BSD
+   // Handle EEXIST: address already has a mapping (e.g., from prior Reserve)
+   // This is the "commit on existing reservation" path
+   if (errno == EEXIST && base_address &&
+@@ -350,7 +377,7 @@ bool Protect(void* base_address, size_t length, PageAccess access, PageAccess* o
+     size_t old_region_length = 0;
+     QueryProtect(base_address, old_region_length, *out_old_access);
+   }
+-#elif REX_PLATFORM_LINUX
++#elif REX_PLATFORM_LINUX && !defined(__FreeBSD__)	// FreeBSD doesn't handle mmap like Linux, so exclude from this
+   // NOTE(tomc): we may want to look at doing this differently. it should work for now
+   //             but there is a TOCTOU window between reading and changing.
+   //             This really shouldn't be an issue since VirtualProtect on Windows isn't truly
+@@ -362,6 +389,28 @@ bool Protect(void* base_address, size_t length, PageAccess access, PageAccess* o
+       *out_old_access = PermsToPageAccess(e.perms);
+     }
+   }
++#elif defined(__FreeBSD__)
++  if (out_old_access) {
++    int cnt = 0;
++    struct kinfo_vmentry* vmentries = kinfo_getvmmap(getpid(), &cnt);
++    if (vmentries) {
++      uintptr_t target_addr = reinterpret_cast<uintptr_t>(base_address);
++      bool found = false;
++
++      for (int i = 0; i < cnt; i++) {
++        if (target_addr >= vmentries[i].kve_start && target_addr < vmentries[i].kve_end) {
++          *out_old_access = FreeBSDPermsToPageAccess(vmentries[i].kve_protection);
++          found = true;
++          break;
++        }
++      }
++      free(vmentries);
++      
++      if (!found) {
++        assert_always("Could not find the target virtual memory mapping region on FreeBSD");
++      }
++    }
++  }
+ #endif
+ 
+   uint32_t prot = ToPosixProtectFlags(access);
+@@ -408,7 +457,31 @@ bool QueryProtect(void* base_address, size_t& length, PageAccess& access_out) {
+     access_out = PageAccess::kNoAccess;
+   }
+   return true;
+-#elif !REX_PLATFORM_LINUX
++#elif defined(__FreeBSD__)
++  access_out = PageAccess::kNoAccess;
++  length = 0;
++
++  int cnt = 0;
++  struct kinfo_vmentry* vmentries = kinfo_getvmmap(getpid(), &cnt);
++  if (!vmentries) {
++    return false;
++  }
++
++  const uintptr_t addr = reinterpret_cast<uintptr_t>(base_address);
++  bool found = false;
++
++  for (int i = 0; i < cnt; i++) {
++    if (addr >= vmentries[i].kve_start && addr < vmentries[i].kve_end) {
++      length = static_cast<size_t>(vmentries[i].kve_end - addr);
++      access_out = FreeBSDPermsToPageAccess(vmentries[i].kve_protection);
++      found = true;
++      break;
++    }
++  }
++
++  free(vmentries);
++  return found;
++#elif !REX_PLATFORM_LINUX && !defined(__FreeBSD__)
+   access_out = PageAccess::kNoAccess;
+   length = 0;
+   return false;
+
+--- src/core/threading_posix.cpp.orig
++++ src/core/threading_posix.cpp
+@@ -49,23 +49,24 @@ static_assert(REX_PLATFORM_LINUX || REX_PLATFORM_MAC, "This file is POSIX-only")
+ #include <rex/string.h>
+ #endif
+ 
+-#if REX_PLATFORM_LINUX
+-// SIGEV_THREAD_ID in timer_create(...) is a Linux extension
++#ifdef __FreeBSD__
++#include <pthread_np.h>
++using cpu_set_t = cpuset_t;	// create an alias that follows the Linux naming convention on FreeBSD
++#endif
++
++#if REX_PLATFORM_LINUX && !defined(__FreeBSD__)	// for graphics, we want to treat FreeBSD like Linux. Not so for
++// SIGEV_THREAD_ID in timer_create(...) is a Linux extension										threads/mmap!
+ #define REX_HAS_SIGEV_THREAD_ID 1
+ #ifdef __GLIBC__
+ #define sigev_notify_thread_id _sigev_un._tid
+ #endif
+-#if __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
++#if defined(__GLIBC__) && __GLIBC__ == 2 && __GLIBC_MINOR__ < 30
+ #define gettid() syscall(SYS_gettid)
+ #endif
+ #else
+ #define REX_HAS_SIGEV_THREAD_ID 0
+ #endif
+ 
+-#if defined(__FreeBSD__)
+-#include <pthread_np.h>
+-#endif
+-
+ namespace rex::thread {
+ 
+ #if REX_PLATFORM_ANDROID
+@@ -131,7 +132,7 @@ int GetSystemSignal(SignalType num) {
+       assert_unhandled_case(num);
+       return SIGUSR1;
+   }
+-#else
++#else	// this is POSIX and should work on FreeBSD; Apple is more limited
+   auto result = SIGRTMIN + static_cast<int>(num);
+   assert_true(result < SIGRTMAX);
+   return result;
+@@ -276,7 +277,7 @@ static sem_t* RexCreateAnonymousSemaphore() {
+ class PosixConditionBase {
+  public:
+   PosixConditionBase() {
+-#if REX_PLATFORM_LINUX
++#if REX_PLATFORM_LINUX && !defined(__FreeBSD__)
+     // Use robust mutexes so waits can recover if owner thread terminates.
+     pthread_mutexattr_t attr;
+     if (pthread_mutexattr_init(&attr) == 0) {
+@@ -296,7 +297,7 @@ class PosixConditionBase {
+   WaitResult Wait(std::chrono::milliseconds timeout) {
+     bool executed;
+     auto predicate = [this] { return this->signaled(); };
+-#if REX_PLATFORM_LINUX
++#if REX_PLATFORM_LINUX && !defined(__FreeBSD__)
+     auto native_mutex = static_cast<pthread_mutex_t*>(mutex_.native_handle());
+     int lock_result = pthread_mutex_lock(native_mutex);
+     if (lock_result == EOWNERDEAD) {
+@@ -350,7 +351,7 @@ class PosixConditionBase {
+       locks.reserve(handles.size());
+ 
+       for (size_t i = 0; i < handles.size(); ++i) {
+-#if REX_PLATFORM_LINUX
++#if REX_PLATFORM_LINUX && !defined(__FreeBSD__)
+         auto native_mutex = static_cast<pthread_mutex_t*>(handles[i]->mutex_.native_handle());
+         int result = pthread_mutex_trylock(native_mutex);
+         if (result == 0 || result == EOWNERDEAD) {
+@@ -1061,23 +1062,13 @@ class PosixCondition<Thread> : public PosixConditionBase {
+ 
+ class PosixWaitHandle {
+  public:
+-#if defined(__FreeBSD__)
+-  virtual ~PosixWaitHandle() = default;
+-#else
+   virtual ~PosixWaitHandle();
+-#endif
+   virtual PosixConditionBase& condition() = 0;
+ };
+ 
+-#ifndef __FreeBSD__
+ PosixWaitHandle::~PosixWaitHandle() = default;
+-#endif
+ 
+-#if defined(__FreeBSD__)
+-thread_local ::rex::thread::PosixCondition<Thread>* current_thread_condition_ = nullptr;
+-#else
+ thread_local PosixCondition<Thread>* current_thread_condition_ = nullptr;
+-#endif
+ 
+ bool DispatchCurrentThreadUserCallback() {
+   if (!current_thread_condition_) {
