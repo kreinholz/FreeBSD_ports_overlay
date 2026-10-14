@@ -1,0 +1,1 @@
+The DirectX Shader Compiler project includes a compiler and related tools used to compile High-Level Shader Language (HLSL) programs into DirectX Intermediate Language (DXIL) for DirectX and the Standard Portable Intermediate Representation (SPIR-V) for Vulkan.

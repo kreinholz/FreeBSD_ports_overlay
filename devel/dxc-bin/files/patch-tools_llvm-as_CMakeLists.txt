@@ -1,0 +1,21 @@
+--- tools/llvm-as/CMakeLists.txt.orig	2026-10-10 20:23:47 UTC
++++ tools/llvm-as/CMakeLists.txt
+@@ -6,12 +6,12 @@ set(LLVM_LINK_COMPONENTS
+   MSSupport # HLSL Change
+   )
+ 
+-add_llvm_tool(llvm-as
+-  llvm-as.cpp
+-  )
++#add_llvm_tool(llvm-as
++#  llvm-as.cpp
++#  )
+ 
+ # HLSL Change Starts
+-if (NOT HLSL_OPTIONAL_PROJS_IN_DEFAULT)
+-  set_target_properties(llvm-as PROPERTIES EXCLUDE_FROM_ALL ON EXCLUDE_FROM_DEFAULT_BUILD ON)
+-endif ()
++#if (NOT HLSL_OPTIONAL_PROJS_IN_DEFAULT)
++#  set_target_properties(llvm-as PROPERTIES EXCLUDE_FROM_ALL ON EXCLUDE_FROM_DEFAULT_BUILD ON)
++#endif ()
+ # HLSL Change Ends
