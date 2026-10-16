@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.2974.gf32636a
+PORTVERSION=	1.20.4.3197.g5fa79c6
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -15,7 +15,8 @@ NOT_FOR_ARCHS=	powerpc powerpc64 powerpcspe
 NOT_FOR_ARCHS_REASON=	only little-endian is supported, see \
 		https://github.com/hrydgard/ppsspp/issues/8823
 
-BUILD_DEPENDS=	rapidjson>0:devel/rapidjson
+BUILD_DEPENDS=	rapidjson>0:devel/rapidjson \
+		curl>0:ftp/curl
 
 LIB_DEPENDS=	libchdr.so:devel/libchdr \
 		libfreetype.so:print/freetype2 \
@@ -33,7 +34,7 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	f32636a
+GH_TAGNAME=	5fa79c6
 GH_TUPLE?=	libretro:libretro-common:76a3d54feb0ee0ce9d59b90aa24694f3782063d3:libretrocommon/libretro/libretro-common \
 		hrydgard:ppsspp-ffmpeg:b87f7c6d522d1edba77cfc4fac96ce48a236f806:ppssppffmpeg/ffmpeg \
 		Kingcom:armips:v0.11.0-219-g62adab4:armips/ext/armips \
