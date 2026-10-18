@@ -1,5 +1,5 @@
 PORTNAME=	ffplay
-DISTVERSION=	8.1.2
+DISTVERSION=	9.0.2
 CATEGORIES=	multimedia audio net
 MASTER_SITES=	https://ffmpeg.org/releases/
 DISTNAME=	ffmpeg-${PORTVERSION}
@@ -52,7 +52,6 @@ CONFIGURE_ARGS=	--prefix="${PREFIX}" \
 		--enable-static \
 		--disable-shared \
 		--pkgconfigdir="${PREFIX}/libdata/pkgconfig" \
-		--disable-libcelt \
 		--disable-mbedtls \
 		--enable-pic \
 		--enable-gpl \
@@ -64,12 +63,12 @@ CONFIGURE_ARGS=	--prefix="${PREFIX}" \
 
 OPTIONS_DEFINE=	ALSA AMR_NB AMR_WB AOM ARIBB24 ASM ASS BS2B CACA CDIO CODEC2 \
 		DAV1D DC1394 DEBUG DOCS DRM DVD FDK_AAC FLITE FONTCONFIG \
-		FREETYPE FREI0R FRIBIDI GLSLANG GME GSM HARFBUZZ ICONV ILBC \
-		JACK JXL KVAZAAR LADSPA LAME LCMS2 LENSFUN LIBBLURAY \
+		FREETYPE FREI0R FRIBIDI GME GSM HARFBUZZ ICONV ILBC \
+		JACK JXL KVAZAAR LADSPA LAME LCMS2 LIBBLURAY \
 		LIBPLACEBO LIBRSVG2 LIBXML2 LTO LV2 MODPLUG MYSOFA NETWORK \
 		NVENC OPENAL OPENCL OPENGL OPENH264 OPENJPEG OPENMPT \
 		OPTIMIZED_CFLAGS OPUS POCKETSPHINX PULSEAUDIO RAV1E RABBITMQ \
-		RIST RTCPU RUBBERBAND SDL SHADERC SMB SNAPPY SNDIO SOXR SPEEX \
+		RIST RTCPU RUBBERBAND SDL SMB SNAPPY SNDIO SOXR SPEEX \
 		SRT SSH SVTAV1 TENSORFLOW TESSERACT THEORA \
 		TWOLAME V4L VAAPI VAPOURSYNTH VDPAU VIDSTAB VMAF VO_AMRWBENC \
 		VORBIS VPX VULKAN VVENC WEBP X264 X265 XCB XVID XVIDEO ZIMG \
@@ -92,6 +91,9 @@ OPTIONS_DEFAULT_aarch64=LTO
 OPTIONS_DEFAULT_amd64=	LTO
 OPTIONS_SUB=	yes
 
+OPTIONS_DEFAULT+=	DRM FONTCONFIG FREETYPE FREI0R JXL LIBPLACEBO \
+			LIBRSVG2 V4L VAAPI VDPAU VMAF VULKAN XCB
+
 ASS_DESC=	Subtitles rendering via libass
 AOM_DESC=	AV1 video encoding/decoding via libaom
 ARIBB24_DESC=	ARIB text and caption decoding via libaribb24
@@ -104,7 +106,6 @@ DRM_DESC=	KMS grabbing using libdrm
 DVD_DESC=	Support for DVD
 FDK_AAC_DESC=	AAC audio encoding via Fraunhofer FDK
 FLITE_DESC=	Voice synthesis support via libflite
-GLSLANG_DESC=	GLSL->SPIRV compilation via libglslang
 GME_DESC=	Game Music Emu demuxer
 GPL3_DESC=	Allow (L)GPL version 3 code(cs)
 HARFBUZZ_DESC=	Text shaping via HarfBuzz
@@ -126,7 +127,6 @@ RIST_DESC=	Reliable Internet Stream Transport protocol via librist
 RUBBERBAND_DESC=Time-stretching and pitch-shifting with librubberband
 RTCPU_DESC=	Detect CPU capabilities at runtime
 RTMP_DESC=	RTMP(T)E protocol support
-SHADERC_DESC=	GLSL->SPIRV compilation via libshaderc
 SRT_DESC=	Haivision SRT protocol via libsrt
 SVTAV1_DESC=	AV1 encoding via SVT-AV1
 #SVTVP9_DESC=	VP9 encoding via SVT-VP9
@@ -137,7 +137,7 @@ THEORA_DESC=	Encoding support for theora via libtheora
 VAPOURSYNTH_DESC=	VapourSynth demuxer
 VIDSTAB_DESC=	Video stabilization filter
 VMAF_DESC=	VMAF filter via libvmaf
-VPL_DESC=	Intel oneVPL (aka Quick Sync Video)
+VPL_DESC=	Intel libvpl (aka Quick Sync Video)
 VULKAN_DESC=	Vulkan filters
 VVENC_DESC=	H.266/VVC encoding support via VVenC
 XCB_DESC=	X11 grabbing using XCB
@@ -152,7 +152,7 @@ ZVBI_DESC=	Teletext support via libzvbi
 ###  --enable-libiec61883	enable iec61883 via libiec61883
 ###  --enable-liblc3		enable LC3 de/encoding via liblc3
 ###  --enable-liblcevc-dec	enable LCEVC decoding via liblcevc-dec
-###  --enable-libmpeghdec	enable MPEG-H 3DA decoding via libmpeghdec
+###  --enable-libmpeghdec       enable MPEG-H 3DA decoding via libmpeghdec
 ###  --enable-liboapv		enable APV encoding via liboapv
 ###  --enable-libopencv		enable video filtering via libopencv
 ###  --enable-libqrencode	enable QR encode generation via libqrencode
@@ -278,13 +278,6 @@ FRIBIDI_CONFIGURE_ENABLE=	libfribidi
 GCRYPT_LIB_DEPENDS=	libgcrypt.so:security/libgcrypt
 GCRYPT_CONFIGURE_ENABLE=	gcrypt
 
-# OpenGL and OpenGL ES shader frontend
-GLSLANG_BUILD_DEPENDS=	glslang>0:graphics/glslang \
-			spirv-tools>0:graphics/spirv-tools
-GLSLANG_CONFIGURE_ENABLE=	libglslang
-GLSLANG_LDFLAGS=	-lm
-GLSLANG_IMPLIES=	VULKAN
-
 # GnuTLS
 GNUTLS_LIB_DEPENDS=	libgnutls.so:security/gnutls
 GNUTLS_CONFIGURE_ENABLE=	gnutls
@@ -340,8 +333,8 @@ LCMS2_LIB_DEPENDS=	liblcms2.so:graphics/lcms2
 LCMS2_CONFIGURE_ENABLE=	lcms2
 
 # Lens geometry distortions correction filter via lib(lensfun)
-LENSFUN_LIB_DEPENDS=	liblensfun.so:graphics/lensfun
-LENSFUN_CONFIGURE_ENABLE=	liblensfun
+#LENSFUN_LIB_DEPENDS=	liblensfun.so:graphics/lensfun
+#LENSFUN_CONFIGURE_ENABLE=	liblensfun
 
 # libbluray
 LIBBLURAY_LIB_DEPENDS=	libbluray.so:multimedia/libbluray
@@ -464,12 +457,6 @@ SDL_USES=		sdl
 SDL_USE=		SDL=sdl2
 SDL_CONFIGURE_ENABLE=	sdl2
 
-# GLSL/HLSL to SPIR-V shader compiler
-SHADERC_LIB_DEPENDS=	libshaderc_shared.so:graphics/shaderc
-SHADERC_CONFIGURE_ENABLE=	libshaderc
-SHADERC_IMPLIES=	VULKAN
-SHADERC_PREVENTS=	GLSLANG
-
 # Samba protocol support via libsmbclient
 SMB_USES=		samba:lib
 SMB_CONFIGURE_ENABLE=	libsmbclient
@@ -566,8 +553,8 @@ VO_AMRWBENC_IMPLIES=	GPL3
 VORBIS_LIB_DEPENDS=	libvorbisenc.so:audio/libvorbis
 VORBIS_CONFIGURE_ENABLE=	libvorbis
 
-# Intel oneVPL
-VPL_LIB_DEPENDS=	libvpl.so:multimedia/onevpl
+# Intel libvpl
+VPL_LIB_DEPENDS=	libvpl.so:multimedia/libvpl
 VPL_CONFIGURE_ENABLE=	libvpl
 
 # VP8 and VP9 de/encoding via libvpx
@@ -597,8 +584,8 @@ X265_CONFIGURE_ENABLE=	libx265
 
 # X11 grabbing using XCB
 XCB_USES=		xorg
-XCB_USE=		XORG=xcb
-XCB_CONFIGURE_ENABLE=	libxcb
+XCB_USE=		XORG=xcb,x11,xext,xv
+XCB_CONFIGURE_ENABLE=	libxcb libxcb-shape libxcb-shm libxcb-xfixes xlib
 
 # XviD support
 XVID_LIB_DEPENDS=	libxvidcore.so:multimedia/xvid
