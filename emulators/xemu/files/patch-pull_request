@@ -1,0 +1,260 @@
+--- build.sh.orig
++++ build.sh
+@@ -199,6 +199,12 @@ case "$platform" in # Adjust compilation options based on platform
+         opts="$opts --disable-werror"
+         postbuild='package_linux'
+         ;;
++    FreeBSD)
++        echo 'Compiling for FreeBSD...'
++        sys_cflags='-Wno-error=redundant-decls'
++        opts="$opts --disable-werror"
++        postbuild='package_linux'
++        ;;
+     Darwin)
+         echo "Compiling for MacOS for $target_arch..."
+         if [ "$target_arch" == "arm64" ]; then
+@@ -266,6 +272,10 @@ set -x # Print commands from now on
+     ${opts} \
+     "$@"
+ 
+-time make -j"${job_count}" ${target} 2>&1 | tee build.log
++if [[ "$OSTYPE" == "freebsd"* ]]; then
++    time gmake -j"${job_count}" ${target} 2>&1 | tee build.log
++else
++    time make -j"${job_count}" ${target} 2>&1 | tee build.log
++fi
+ 
+ "${postbuild}" # call post build functions
+
+--- meson.build.orig
++++ meson.build
+@@ -279,6 +279,14 @@ enable_modules = get_option('modules') \
+            error_message: 'Modules are incompatible with static linking') \
+   .allowed()
+ 
++# Check version if FreeBSD host
++freebsd_version_int = 0
++if host_os == 'freebsd'
++  freebsd_version_str = cc.get_define('__FreeBSD_version',
++                                     prefix: '#include <sys/param.h>')
++  freebsd_version_int = freebsd_version_str.to_int()
++endif
++
+ #######################################
+ # Variables for host and accelerators #
+ #######################################
+@@ -1711,8 +1719,13 @@ if sdl.found()
+     sdl = declare_dependency(compile_args: '-Wno-undef',
+                              dependencies: sdl.partial_dependency(compile_args: true, link_args: true, links: true, includes: true))
+   endif
+-  sdl_image = dependency('SDL3_image', required: get_option('sdl_image'),
++  if host_os == 'freebsd'
++    sdl_image = dependency('sdl3-image', required: get_option('sdl_image'),
++			 method: 'pkg-config')
++  else
++    sdl_image = dependency('SDL3_image', required: get_option('sdl_image'),
+                          method: 'pkg-config')
++  endif
+ else
+   if get_option('sdl_image').enabled()
+     error('sdl-image required, but SDL was @0@'.format(
+@@ -1893,6 +1906,8 @@ if not get_option('opengl').auto() or have_system or have_vhost_user_gpu
+     opengl_libs=['-lopengl32', '-lgdi32']
+   elif host_os == 'linux'
+     opengl_libs=['-lGL']
++  elif host_os == 'freebsd'
++    opengl_libs=['-L/usr/local/lib', '-lGL']
+   else
+     error('Unknown GL platform')
+   endif
+@@ -2394,7 +2409,7 @@ elif host_os == 'linux'
+ endif
+ 
+ if vulkan.found()
+-  libglslang = dependency('glslang', version: '>=15.1.0', required: false)
++  libglslang = dependency('glslang', version: '>=15.0.0', required: false)
+   if not libglslang.found()
+     # FIXME: Get spirv-tools to enable opt.
+     glslang_opts = cmake.subproject_options()
+@@ -2890,14 +2905,17 @@ config_host_data.set('CONFIG_ASAN_IFACE_FIBER', have_asan_fiber)
+ have_inotify_init = cc.has_header_symbol('sys/inotify.h', 'inotify_init')
+ have_inotify_init1 = cc.has_header_symbol('sys/inotify.h', 'inotify_init1')
+ inotify = not_found
++# FreeBSD 1500000 and higher has Linux-compatible inotify
+ if (have_inotify_init or have_inotify_init1) and host_os == 'freebsd'
+-  # libinotify-kqueue
+-  inotify = cc.find_library('inotify')
+-  if have_inotify_init
+-    have_inotify_init = inotify.found()
+-  endif
+-  if have_inotify_init1
+-    have_inotify_init1 = inotify.found()
++  if freebsd_version_int < 1500000
++    # libinotify-kqueue
++    inotify = cc.find_library('inotify')
++    if have_inotify_init
++      have_inotify_init = inotify.found()
++    endif
++    if have_inotify_init1
++      have_inotify_init1 = inotify.found()
++    endif
+   endif
+ endif
+ config_host_data.set('CONFIG_INOTIFY', have_inotify_init)
+
+--- scripts/gen-license.py.orig
++++ scripts/gen-license.py
+@@ -28,7 +28,8 @@ multi = "multi"
+ windows = "windows"
+ macos = "darwin"
+ linux = "linux"
+-all_platforms = {windows, macos, linux}
++freebsd = "freebsd"
++all_platforms = {windows, macos, linux, freebsd}
+ current_platform = linux
+ 
+ versions = {}
+@@ -122,7 +123,9 @@ class Lib:
+                 .strip()
+             )
+             return self._version
+-
++        elif current_platform == freebsd and self.pkg_mac:
++            self._version = versions[self.pkg_mac]
++            return self._version
+         assert False, "Failed to get version info for " + self.name
+ 
+     @property
+@@ -165,6 +168,7 @@ class PkgConfig:
+     def modversion(self):
+         pkg_config = {
+             linux: "pkg-config",
++            freebsd: "pkg-config",
+             windows: "x86_64-w64-mingw32.static-pkg-config",
+             macos: "pkg-config",
+         }[current_platform]
+@@ -568,6 +572,8 @@ def main():
+ 
+     if args.platform == "":
+         args.platform = sys.platform.lower()
++    if args.platform.startswith(freebsd):
++        args.platform = "freebsd"
+     global current_platform
+     current_platform = args.platform
+     if args.version_file != "":
+
+--- subprojects/dsp56300/meson.build.orig
++++ subprojects/dsp56300/meson.build
+@@ -12,23 +12,41 @@ elif host_os == 'windows'
+ elif host_os == 'linux'
+   os_suffix = 'unknown-linux-gnu'
+ else
+-  error('Unsupported host OS: ' + host_os)
++  os_suffix = ''
+ endif
+ rust_target = host_cpu + '-' + os_suffix
+ 
+-ver = meson.project_version()
+-prefix = 'dsp56300-@0@-@1@'.format(ver, rust_target)
+-archive = '@0@.tar.gz'.format(prefix)
+-url = 'https://github.com/mborgerson/dsp56300/releases/download/v@0@/@1@'.format(ver, archive)
+-lib = meson.current_build_dir() / prefix / 'lib' / 'libdsp56300_emu_ffi.a'
+ 
+-if not fs.exists(lib)
+-  src_archive = meson.current_source_dir() / archive
++ver = meson.project_version()
++if os_suffix != ''
++  prefix = 'dsp56300-@0@-@1@'.format(ver, rust_target)
++  archive = '@0@.tar.gz'.format(prefix)
++  url = 'https://github.com/mborgerson/dsp56300/releases/download/v@0@/@1@'.format(ver, archive)
++  lib = meson.current_build_dir() / prefix / 'lib' / 'libdsp56300_emu_ffi.a'
++  if not fs.exists(lib)
++    src_archive = meson.current_source_dir() / archive
++    if not fs.exists(src_archive)
++      message('Downloading dsp56300 @0@ for @1@...'.format(ver, rust_target))
++      run_command(find_program('curl'), '-fsSL', url, '-o', src_archive, check: true)
++    endif
++    run_command('tar', 'xzf', src_archive, '-C', meson.current_build_dir(), check: true)
++  endif
++  inc_dir = [prefix / 'include']
++else
++  message('No prebuilt binaries available for "@0@". Building from source.'.format(host_os))
++  cargo = find_program('cargo', required: true)
++  prefix = 'dsp56300-@0@'.format(ver)
++  src_archive = '@0@.tar.gz'.format(prefix)
++  url = 'https://github.com/mborgerson/dsp56300/archive/refs/tags/v@0@/@1@'.format(ver, src_archive)
+   if not fs.exists(src_archive)
+-    message('Downloading dsp56300 @0@ for @1@...'.format(ver, rust_target))
++    message('Downloading dsp56300 @0@...'.format(ver))
+     run_command(find_program('curl'), '-fsSL', url, '-o', src_archive, check: true)
+   endif
+   run_command('tar', 'xzf', src_archive, '-C', meson.current_build_dir(), check: true)
++  extracted_src_dir = meson.current_build_dir() / prefix
++  cargo_build = run_command(cargo, 'build', '--release', '--manifest-path', extracted_src_dir / 'Cargo.toml', '-p', 'dsp56300-emu-ffi', '--no-default-features', check: true)
++  lib = extracted_src_dir / 'target' / 'release' / 'libdsp56300_emu_ffi.a'
++  inc_dir = include_directories(prefix / 'crates' / 'emu-ffi' / 'include')
+ endif
+ 
+ link_args = []
+@@ -38,11 +56,13 @@ elif host_os == 'windows'
+   link_args = ['-lbcrypt', '-lntdll', '-luserenv', '-lws2_32']
+ elif host_os == 'darwin'
+   link_args = ['-lpthread', '-lm', '-framework', 'Security']
++else
++  link_args = ['-lpthread', '-ldl', '-lm']
+ endif
+ 
+ dsp56300_dep = declare_dependency(
+   link_args: [lib] + link_args,
+-  include_directories: include_directories(prefix / 'include'),
++  include_directories: inc_dir,
+ )
+ 
+ meson.override_dependency('dsp56300-emu-ffi', dsp56300_dep)
+
+--- ui/meson.build.orig
++++ ui/meson.build
+@@ -47,7 +47,7 @@ if host_os == 'darwin'
+   xemu_ss.add(xemu_cocoa)
+ endif
+ 
+-if host_os == 'linux'
++if host_os == 'linux' or host_os == 'freebsd'
+   xemu_ss.add([gtk, files('xemu-os-utils-linux.c')])
+ elif host_os == 'windows'
+   xemu_ss.add(files('xemu-os-utils-windows.c'))
+
+--- ui/xemu-os-utils-linux.c.orig
++++ ui/xemu-os-utils-linux.c
+@@ -21,8 +21,13 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <assert.h>
+-#include <glib.h>
+-#include <glib/gprintf.h>
++#ifdef __FreeBSD__
++  #include <glib-2.0/glib.h>
++  #include <glib-2.0/glib/gprintf.h>
++#else
++  #include <glib.h>
++  #include <glib/gprintf.h>
++#endif
+ 
+ static char *read_file_if_possible(const char *path)
+ {
+
+--- util/meson.build.orig
++++ util/meson.build
+@@ -113,8 +113,11 @@ if have_block
+   util_ss.add(files('timed-average.c'))
+   if config_host_data.get('CONFIG_INOTIFY1')
+     freebsd_dep = []
++    # FreeBSD 1500000 and higher has Linux-compatible inotify
+     if host_os == 'freebsd'
+-      freebsd_dep = inotify
++      if freebsd_version_int < 1500000
++        freebsd_dep = inotify
++      endif
+     endif
+     util_ss.add(files('filemonitor-inotify.c'), freebsd_dep)
+   else
