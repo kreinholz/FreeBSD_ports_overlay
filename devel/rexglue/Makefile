@@ -53,8 +53,8 @@ CFLAGS+=	-march=x86-64-v2
 CXXFLAGS+=	-march=x86-64-v2
 .endif
 
-.if ${OSVERSION} < 1501000
-IGNORE=	requires FreeBSD 15.1 or later due to libc++ shortcomings
+.if ${OSVERSION} < 1501503
+IGNORE=	requires FreeBSD 15.1-STABLE or later due to libc++ shortcomings
 .endif
 
 USE_GITHUB=	yes

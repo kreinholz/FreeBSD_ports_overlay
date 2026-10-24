@@ -1,6 +1,6 @@
-TIMESTAMP = 1792346061
-SHA256 (hrydgard-ppsspp-1.20.4.3332.g0c6aa15-0c6aa15_GH0.tar.gz) = d28760d624e418b383ba2c1c5c5ba59ee8eb6d2c8ed6052db26ae4e0cf70547b
-SIZE (hrydgard-ppsspp-1.20.4.3332.g0c6aa15-0c6aa15_GH0.tar.gz) = 26987330
+TIMESTAMP = 1792802086
+SHA256 (hrydgard-ppsspp-1.20.4.3794.g0028f30-0028f30_GH0.tar.gz) = b05e3f1308e5e4880cbd6fb158c68ed4c20f6912719bbab0f61e5c37c07860de
+SIZE (hrydgard-ppsspp-1.20.4.3794.g0028f30-0028f30_GH0.tar.gz) = 27318941
 SHA256 (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = da3c61d2d47df12536a7977443387c1c3d7a750fe8c916c943860788b590db7e
 SIZE (libretro-libretro-common-76a3d54feb0ee0ce9d59b90aa24694f3782063d3_GH0.tar.gz) = 769418
 SHA256 (hrydgard-ppsspp-ffmpeg-b87f7c6d522d1edba77cfc4fac96ce48a236f806_GH0.tar.gz) = cb3a92c412b754886b469bd0d937e8edcdabc87f7a09614720223e6856e76bcc
@@ -21,7 +21,7 @@ SHA256 (hrydgard-ppsspp-lua-7648485f14e8e5ee45e8e39b1eb4d3206dbd405a_GH0.tar.gz)
 SIZE (hrydgard-ppsspp-lua-7648485f14e8e5ee45e8e39b1eb4d3206dbd405a_GH0.tar.gz) = 239843
 SHA256 (hrydgard-nanosvg-478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7_GH0.tar.gz) = 0f5702795d506807c82a3d933827a3988cf4b9ffa6032cb67538de90791fc0a6
 SIZE (hrydgard-nanosvg-478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7_GH0.tar.gz) = 298163
-SHA256 (Kethen-aemu_postoffice-9e533637b9a13bb0194c75cf43b0bf6d25d8101a_GH0.tar.gz) = 38b8c2a446df60cf4e974ec2477e39e2006ceec676cc907d203e3d86e0046cb0
-SIZE (Kethen-aemu_postoffice-9e533637b9a13bb0194c75cf43b0bf6d25d8101a_GH0.tar.gz) = 234893
+SHA256 (Kethen-aemu_postoffice-ef5ad120f8f2692b6151ede4de2d5263ebbc27d6_GH0.tar.gz) = 7084865254478f3545c522452bc50b2107d8d216f96bd1dfbeaaf4432d874ebf
+SIZE (Kethen-aemu_postoffice-ef5ad120f8f2692b6151ede4de2d5263ebbc27d6_GH0.tar.gz) = 801550
 SHA256 (Kingcom-filesystem-v1.1.2-171-g3f1c185_GH0.tar.gz) = 9f3866efc8b8b29cd9ff51c0cce8a281ff88cd34694d8da0d064cb82d95b8b71
 SIZE (Kingcom-filesystem-v1.1.2-171-g3f1c185_GH0.tar.gz) = 163405
