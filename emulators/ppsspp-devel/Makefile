@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.4319.gd0cb768
+PORTVERSION=	1.20.4.4436.g0051dca
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -34,7 +34,7 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	d0cb768
+GH_TAGNAME=	0051dca
 GH_TUPLE?=	libretro:libretro-common:4ed412f88fedd38750c898f75178b4f7d15274fb:libretrocommon/libretro/libretro-common \
 		Kingcom:armips:v0.11.0-219-g62adab4:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \
@@ -44,7 +44,7 @@ GH_TUPLE?=	libretro:libretro-common:4ed412f88fedd38750c898f75178b4f7d15274fb:lib
 		RetroAchievements:rcheevos:v12.4.0-16-g1433173:rcheevos/ext/rcheevos \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
-		Kethen:aemu_postoffice:89df7297a8db658e71e29cd6102309725b779e21:aemu_postoffice/ext/aemu_postoffice \
+		Kethen:aemu_postoffice:02abf18fd161a1639d9f93c48c4c46638c7c6d15:aemu_postoffice/ext/aemu_postoffice \
 		Kingcom:filesystem:v1.1.2-171-g3f1c185:filesystem/ext/armips/ext/filesystem
 EXCLUDE=	libzip zlib
 USE_GL=		glew opengl
