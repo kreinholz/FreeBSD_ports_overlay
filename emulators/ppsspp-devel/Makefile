@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.4436.g0051dca
+PORTVERSION=	1.20.4.4509.gee71456
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -34,14 +34,14 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	0051dca
+GH_TAGNAME=	ee71456
 GH_TUPLE?=	libretro:libretro-common:4ed412f88fedd38750c898f75178b4f7d15274fb:libretrocommon/libretro/libretro-common \
 		Kingcom:armips:v0.11.0-219-g62adab4:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \
 		KhronosGroup:SPIRV-Cross:f11ba9f0b21ba8fc15153d50a2a1ae31ab1cf8f7:SPIRVCross/ext/SPIRV-Cross \
 		unknownbrackets:ppsspp-debugger:9776332f720c854ef26f325a0cf9e32c02115a9c:ppssppdebugger/assets/debugger \
 		google:cpu_features:v0.4.1-211-gfd4ffc1:cpu_features/ext/cpu_features \
-		RetroAchievements:rcheevos:v12.4.0-16-g1433173:rcheevos/ext/rcheevos \
+		RetroAchievements:rcheevos:v12.4.0-45-geea6461:rcheevos/ext/rcheevos \
 		hrydgard:ppsspp-lua:7648485f14e8e5ee45e8e39b1eb4d3206dbd405a:ppsspplua/ext/lua \
 		hrydgard:nanosvg:478dbb8f7ed11c3d9b20b3986a8ee2283f483ef7:nanosvg/ext/nanosvg \
 		Kethen:aemu_postoffice:02abf18fd161a1639d9f93c48c4c46638c7c6d15:aemu_postoffice/ext/aemu_postoffice \
