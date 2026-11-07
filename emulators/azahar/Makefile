@@ -1,5 +1,5 @@
 PORTNAME=	azahar
-DISTVERSION=	2126.2
+DISTVERSION=	2127.0-rc2
 CATEGORIES=	emulators
 MASTER_SITES=	https://github.com/azahar-emu/${PORTNAME}/releases/download/${DISTVERSION}/
 DISTNAME=	${PORTNAME}-unified-source-${DISTVERSION}
@@ -8,9 +8,9 @@ MAINTAINER=	kreinholz@gmail.com
 COMMENT=	Nintendo 3DS emulator/debugger
 WWW=		https://azahar-emu.org
 
-LICENSE=	GPLv2+ ISCL
+LICENSE=	GPLv3+ ISCL
 LICENSE_COMB=	multi
-LICENSE_FILE_GPLv2+ =	${WRKSRC}/license.txt
+LICENSE_FILE_GPLv2+ =	${WRKSRC}/LICENSE.txt
 LICENSE_FILE_ISCL=	${WRKSRC}/externals/cubeb/LICENSE
 
 ONLY_FOR_ARCHS=	amd64 aarch64
@@ -54,7 +54,8 @@ CMAKE_ON=	Boost_USE_SHARED_LIBS \
 		USE_SYSTEM_VULKAN_HEADERS \
 		USE_SYSTEM_XXHASH
 
-CMAKE_OFF=	ENABLE_OPENAL
+CMAKE_OFF=	ENABLE_FFMPEG \
+		ENABLE_OPENAL
 
 LDFLAGS+=	-Wl,--as-needed
 
