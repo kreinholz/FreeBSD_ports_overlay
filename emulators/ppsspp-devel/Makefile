@@ -1,5 +1,5 @@
 PORTNAME=	ppsspp
-PORTVERSION=	1.20.4.4797.g5108c39
+PORTVERSION=	1.20.4.4907.g1aebad2
 CATEGORIES=	emulators
 
 MAINTAINER=	kreinholz@gmail.com
@@ -34,7 +34,7 @@ USES=		cmake compiler:c++11-lib gl localbase:ldflags pkgconfig \
 USE_GITHUB=	yes
 GH_ACCOUNT=	hrydgard
 GH_PROJECT=	ppsspp
-GH_TAGNAME=	5108c39
+GH_TAGNAME=	1aebad2
 GH_TUPLE?=	libretro:libretro-common:4ed412f88fedd38750c898f75178b4f7d15274fb:libretrocommon/libretro/libretro-common \
 		Kingcom:armips:v0.11.0-219-g62adab4:armips/ext/armips \
 		hrydgard:glslang:2.3-3991-g50e0708e:glslang/ext/glslang \

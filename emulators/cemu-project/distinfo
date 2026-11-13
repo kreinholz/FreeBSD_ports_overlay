@@ -1,6 +1,6 @@
-TIMESTAMP = 1794360778
-SHA256 (cemu-project-Cemu-2.6.411.gb487cb7-b487cb7_GH0.tar.gz) = 286877cb3b7860e82b8b780697b5ffa879dcd81190d86ef1f39757adb70d1730
-SIZE (cemu-project-Cemu-2.6.411.gb487cb7-b487cb7_GH0.tar.gz) = 21381936
+TIMESTAMP = 1794536463
+SHA256 (cemu-project-Cemu-2.6.418.g9cac875-9cac875_GH0.tar.gz) = 584424c4754464c30b7bf91447250652b77dbe38e256ef4e42f049d8df69c627
+SIZE (cemu-project-Cemu-2.6.418.g9cac875-9cac875_GH0.tar.gz) = 21380058
 SHA256 (mozilla-cubeb-2071354a69aca7ed6df3b4222e305746c2113f60_GH0.tar.gz) = 4d33e013518ece94a74bee8c5ead7c257cc2050a3dce4cd83192a81f39b2c892
 SIZE (mozilla-cubeb-2071354a69aca7ed6df3b4222e305746c2113f60_GH0.tar.gz) = 227176
 SHA256 (arsenm-sanitizers-cmake-aab6948fa863bc1cbe5d0850bc46b9ef02ed4c1a_GH0.tar.gz) = 9f5b073625375322236a94ce8d2d803cdedad321c91e63845f487b9ebfb2c433
