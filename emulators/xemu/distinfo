@@ -1,8 +1,8 @@
-TIMESTAMP = 1792627043
+TIMESTAMP = 1794972205
 SHA256 (xemu-0.8.139.tar.zst) = 97a986bb6f58134fb96b23c96b52615a0325c16e8d02cce6b1329f4d50dff342
 SIZE (xemu-0.8.139.tar.zst) = 99819713
-SHA256 (mborgerson-dsp56300-v0.1.3_GH0.tar.gz) = b1efac0ee05d3e1bdd6b336717149c19f86f9510fb7b7775afc223b6babf37e8
-SIZE (mborgerson-dsp56300-v0.1.3_GH0.tar.gz) = 388279
+SHA256 (dsp56300-0.1.3.tar.gz) = b1efac0ee05d3e1bdd6b336717149c19f86f9510fb7b7775afc223b6babf37e8
+SIZE (dsp56300-0.1.3.tar.gz) = 388279
 SHA256 (rust/crates/aho-corasick-1.1.4.crate) = ddd31a130427c27518df266943a5308ed92d4b226cc639f5a8f1002816174301
 SIZE (rust/crates/aho-corasick-1.1.4.crate) = 184015
 SHA256 (rust/crates/allocator-api2-0.2.21.crate) = 683d7910e743518b0e34f1186f92494becacb047c7b6bf616c96772180fef923

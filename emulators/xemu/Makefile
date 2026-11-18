@@ -2,12 +2,19 @@ PORTNAME=	xemu
 DISTVERSIONPREFIX=	v
 DISTVERSION=	0.8.139
 CATEGORIES=	emulators
-MASTER_SITES=	https://github.com/xemu-project/${PORTNAME}/releases/download/${DISTVERSIONPREFIX}${DISTVERSION}/
+
+SUBPROJECT_NAME=	dsp56300
+SUBPROJECT_DISTVERSION=	0.1.3
+SUBPROJECT_DISTNAME=	${SUBPROJECT_NAME}-${SUBPROJECT_DISTVERSION}
+SUBPROJECT_URL=	https://github.com/xemu-project/${SUBPROJECT_NAME}/archive/refs/tags/${DISTVERSIONPREFIX}${SUBPROJECT_DISTVERSION}.tar.gz?dummy=/
+
+MASTER_SITES=	https://github.com/xemu-project/${PORTNAME}/releases/download/${DISTVERSIONPREFIX}${DISTVERSION}/ \
+		${SUBPROJECT_URL}:subproject
+
 DISTNAME=	${PORTNAME}-${DISTVERSION}
 
-SUBPROJECT_DIST=	mborgerson-dsp56300-v0.1.3_GH0.tar.gz
 DISTFILES=	${DISTNAME}${EXTRACT_SUFX} \
-		${SUBPROJECT_DIST}:subproject
+		${SUBPROJECT_DISTNAME}.tar.gz:subproject
 
 EXTRACT_ONLY=	${_DISTFILES:M*${EXTRACT_SFX}} ${_DISTFILES:M*crate}
 
@@ -237,10 +244,10 @@ PLIST_FILES=	bin/xemu \
 post-extract:
 	@${CP} ${WRKSRC}/subprojects/packagefiles/berkeley-softfloat-3/* ${WRKSRC}/subprojects/berkeley-softfloat-3/
 	@${CP} ${WRKSRC}/subprojects/packagefiles/berkeley-testfloat-3/* ${WRKSRC}/subprojects/berkeley-testfloat-3/
-	@${CP} ${DISTDIR}/${SUBPROJECT_DIST} ${WRKSRC}/subprojects/dsp56300/
-	@${MV} ${WRKSRC}/subprojects/dsp56300/${SUBPROJECT_DIST} ${WRKSRC}/subprojects/dsp56300/dsp56300-0.1.3.tar.gz
-	@${TAR} -xf ${DISTDIR}/${SUBPROJECT_DIST} \
-		-C ${WRKSRC}/subprojects/dsp56300
+	@${CP} ${DISTDIR}/${SUBPROJECT_DISTNAME}.tar.gz ${WRKSRC}/subprojects/${SUBPROJECT_NAME}/
+	@${MV} ${WRKSRC}/subprojects/${SUBPROJECT_NAME}/${SUBPROJECT_DISTNAME}.tar.gz ${WRKSRC}/subprojects/${SUBPROJECT_NAME}/${SUBPROJECT_DISTNAME}.tar.gz
+	@${TAR} -xf ${DISTDIR}/${SUBPROJECT_DISTNAME}.tar.gz \
+		-C ${WRKSRC}/subprojects/${SUBPROJECT_NAME}
 	@${MKDIR} ${DSP_WRKSRC}/cargo-crates
 .for crate in ${CARGO_CRATES}
 	@if [ -d "${WRKDIR}/${crate}" ]; then \
